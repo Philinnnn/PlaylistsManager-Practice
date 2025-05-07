@@ -26,7 +26,7 @@ public class Playlist {
     @Column(name = "description")
     private String description;
 
-    @Column(name = "is_public")
+    @Column(name = "isPublic")
     private Boolean isPublic;
 
     @Column(name = "owner_id")
