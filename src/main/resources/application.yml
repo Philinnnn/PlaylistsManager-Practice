@@ -1,0 +1,35 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          spotify:
+            client-id: ${SPOTIFY_CLIENT_ID}
+            client-secret: ${SPOTIFY_CLIENT_SECRET}
+            scope: ${SPOTIFY_SCOPE}
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            client-name: Spotify
+        provider:
+          spotify:
+            authorization-uri: ${SPOTIFY_AUTHORIZATION_URI}
+            token-uri: ${SPOTIFY_TOKEN_URI}
+            user-info-uri: ${SPOTIFY_USER_INFO_URI}
+            user-name-attribute: ${SPOTIFY_USER_NAME_ATTRIBUTE}
+
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: ${DB_DRIVER_CLASS_NAME}
+
+  jpa:
+    hibernate:
+      ddl-auto: ${HIBERNATE_DDL_AUTO}
+    show-sql: ${HIBERNATE_SHOW_SQL}
+    properties:
+      hibernate:
+        dialect: ${HIBERNATE_DIALECT}
