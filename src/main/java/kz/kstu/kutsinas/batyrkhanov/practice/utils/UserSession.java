@@ -2,25 +2,20 @@ package kz.kstu.kutsinas.batyrkhanov.practice.utils;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+import org.springframework.web.context.WebApplicationContext;
 
-/**
- * Синглтон-класс для хранения информации о текущем пользователе Spotify в сессии.
- */
 @Getter
 @Setter
+@Component
+@ToString(exclude = {"accessToken", "refreshToken"})
+@Scope(value = WebApplicationContext.SCOPE_SESSION)
 public class UserSession {
-
-    private static final UserSession INSTANCE = new UserSession();
-
     private String accessToken;
     private String refreshToken;
     private String userId;
     private String email;
     private String displayName;
-
-    private UserSession() {}
-
-    public static UserSession getInstance() {
-        return INSTANCE;
-    }
 }
