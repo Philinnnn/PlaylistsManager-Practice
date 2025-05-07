@@ -20,11 +20,13 @@ public class SpotifyController {
 
     private final OAuth2AuthorizedClientService authorizedClientService;
     private final UsersRepo usersRepo;
+    private final UserSession session;
 
     @Autowired
-    public SpotifyController(OAuth2AuthorizedClientService authorizedClientService, UsersRepo usersRepo) {
+    public SpotifyController(OAuth2AuthorizedClientService authorizedClientService, UsersRepo usersRepo, UserSession session) {
         this.authorizedClientService = authorizedClientService;
         this.usersRepo = usersRepo;
+        this.session = session;
     }
 
     @GetMapping("/")
@@ -45,6 +47,8 @@ public class SpotifyController {
         saveToSession(attributes, accessToken, refreshToken);
         saveToDatabase(attributes);
 
+        System.out.println(session);
+
         return attributes;
     }
 
@@ -61,7 +65,6 @@ public class SpotifyController {
     }
 
     private void saveToSession(Map<String, Object> attributes, String accessToken, String refreshToken) {
-        UserSession session = UserSession.getInstance();
         session.setUserId((String) attributes.get("id"));
         session.setEmail((String) attributes.get("email"));
         session.setDisplayName((String) attributes.get("display_name"));
