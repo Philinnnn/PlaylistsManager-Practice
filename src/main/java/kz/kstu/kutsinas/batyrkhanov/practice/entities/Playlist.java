@@ -1,49 +1,34 @@
 package kz.kstu.kutsinas.batyrkhanov.practice.entities;
 
-
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.*;
 
+/**
+ * Представляет плейлист Spotify, сохраняемый в БД.
+ */
 @Entity
 @Table(name = "playlists")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Playlist {
+
     @Id
+    @Column(name = "id")
     private String id;
+
+    @Column(name = "name")
     private String name;
+
+    @Column(name = "description")
     private String description;
+
+    @Column(name = "is_public")
     private Boolean isPublic;
+
+    @Column(name = "owner_id")
     private String ownerId;
-
-
-    public Playlist() {
-    }
-
-    public Playlist(String id, String name, Boolean isPublic, String description, String ownerId) {
-        this.id = id;
-        this.name = name;
-        this.isPublic = isPublic;
-        this.description = description;
-        this.ownerId = ownerId;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public Boolean getPublic() {
-        return isPublic;
-    }
-
-    public String getOwnerId() {
-        return ownerId;
-    }
 }
