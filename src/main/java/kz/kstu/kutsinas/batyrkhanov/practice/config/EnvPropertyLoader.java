@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class EnvPropertyLoader {
 
-    @PostConstruct
     public static void init() {
         Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
 

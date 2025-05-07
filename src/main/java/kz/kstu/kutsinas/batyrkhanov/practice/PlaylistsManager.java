@@ -1,4 +1,4 @@
-package kz.kstu.kutsinas.batyrkhanov.practice.runner;
+package kz.kstu.kutsinas.batyrkhanov.practice;
 
 import kz.kstu.kutsinas.batyrkhanov.practice.config.EnvPropertyLoader;
 import org.springframework.boot.SpringApplication;

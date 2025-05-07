@@ -1,55 +1,82 @@
 package kz.kstu.kutsinas.batyrkhanov.practice.controllers;
 
+import kz.kstu.kutsinas.batyrkhanov.practice.entities.AppUser;
 import kz.kstu.kutsinas.batyrkhanov.practice.entities.User;
+import kz.kstu.kutsinas.batyrkhanov.practice.repositories.AppUserRepo;
 import kz.kstu.kutsinas.batyrkhanov.practice.repositories.UsersRepo;
 import kz.kstu.kutsinas.batyrkhanov.practice.utils.UserSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.*;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
-/**
- * Контроллер, обрабатывающий аутентификацию через Spotify.
- */
 @RestController
+@RequestMapping("/spotify")
 public class SpotifyController {
 
     private final OAuth2AuthorizedClientService authorizedClientService;
+    private final AppUserRepo appUserRepo;
     private final UsersRepo usersRepo;
     private final UserSession session;
 
     @Autowired
-    public SpotifyController(OAuth2AuthorizedClientService authorizedClientService, UsersRepo usersRepo, UserSession session) {
+    public SpotifyController(OAuth2AuthorizedClientService authorizedClientService,
+                             AppUserRepo appUserRepo,
+                             UsersRepo usersRepo,
+                             UserSession session) {
         this.authorizedClientService = authorizedClientService;
+        this.appUserRepo = appUserRepo;
         this.usersRepo = usersRepo;
         this.session = session;
     }
 
-    @GetMapping("/")
-    public String home() {
-        return "<a href='/oauth2/authorization/spotify'>Login with Spotify</a>";
-    }
-
     /**
-     * Обработка данных пользователя после авторизации через Spotify.
+     * Метод вызывается после успешной авторизации через Spotify
      */
-    @GetMapping("/user")
-    public Map<String, Object> user(OAuth2AuthenticationToken authentication) {
-        Map<String, Object> attributes = authentication.getPrincipal().getAttributes();
+    @GetMapping("/callback")
+    public ResponseEntity<String> handleSpotifyCallback(OAuth2AuthenticationToken authentication) {
+        // Проверка: пользователь приложения вошёл?
+        String appUsername = session.getUsername();
+        if (appUsername == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("You must be logged in to link Spotify account.");
+        }
 
+        // Получаем Spotify-данные
+        Map<String, Object> attributes = authentication.getPrincipal().getAttributes();
         String accessToken = getAccessToken(authentication);
         String refreshToken = getRefreshToken(authentication);
 
-        saveToSession(attributes, accessToken, refreshToken);
-        saveToDatabase(attributes);
+        // Создаём объект Spotify-пользователя
+        User spotifyUser = new User(
+                (String) attributes.get("id"),
+                (String) attributes.get("display_name"),
+                (String) attributes.get("email"),
+                (String) attributes.get("country"),
+                (String) attributes.get("product"),
+                null // appUser будет установлен позже
+        );
 
-        System.out.println(session);
+        usersRepo.save(spotifyUser);
 
-        return attributes;
+        // Находим текущего пользователя приложения и связываем
+        AppUser appUser = appUserRepo.findByUsername(appUsername)
+                .orElseThrow(() -> new RuntimeException("AppUser not found"));
+
+        appUser.setSpotifyUser(spotifyUser);
+        appUserRepo.save(appUser);
+
+        // Сохраняем сессионные данные
+        session.setAccessToken(accessToken);
+        session.setRefreshToken(refreshToken);
+        session.setUserId(spotifyUser.getId());
+        session.setEmail(spotifyUser.getEmail());
+        session.setDisplayName(spotifyUser.getDisplayName());
+
+        return ResponseEntity.ok("Spotify аккаунт успешно привязан!");
     }
 
     private String getAccessToken(OAuth2AuthenticationToken auth) {
@@ -62,24 +89,5 @@ public class SpotifyController {
         OAuth2AuthorizedClient client = authorizedClientService.loadAuthorizedClient(
                 auth.getAuthorizedClientRegistrationId(), auth.getName());
         return client.getRefreshToken() != null ? client.getRefreshToken().getTokenValue() : null;
-    }
-
-    private void saveToSession(Map<String, Object> attributes, String accessToken, String refreshToken) {
-        session.setUserId((String) attributes.get("id"));
-        session.setEmail((String) attributes.get("email"));
-        session.setDisplayName((String) attributes.get("display_name"));
-        session.setAccessToken(accessToken);
-        session.setRefreshToken(refreshToken);
-    }
-
-    private void saveToDatabase(Map<String, Object> attributes) {
-        User user = new User(
-                (String) attributes.get("id"),
-                (String) attributes.get("display_name"),
-                (String) attributes.get("email"),
-                (String) attributes.get("country"),
-                (String) attributes.get("product")
-        );
-        usersRepo.save(user);
     }
 }

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Панель управления</title>
+    <link rel="stylesheet" th:href="@{/css/form-style.css}">
+</head>
+<body>
+<div class="wrapper">
+    <div class="card" style="text-align: center">
+        <h1>Добро пожаловать, <span sec:authentication="name">пользователь</span>!</h1>
+        <p>Чтобы создать плейлист — привяжите свой Spotify аккаунт:</p>
+        <a th:href="@{/oauth2/authorization/spotify}">
+            <button>🔗 Привязать Spotify</button>
+        </a>
+
+        <form th:action="@{/auth/logout}" method="post" style="margin-top: 20px;">
+            <button type="submit">🚪 Выйти</button>
+        </form>
+    </div>
+</div>
+<script th:src="@{/js/dashboard.js}"></script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Вход</title>
+    <link rel="stylesheet" th:href="@{/css/form-style.css}" />
+</head>
+<body>
+<div class="wrapper">
+    <div class="card">
+        <h1>Вход в приложение</h1>
+        <form id="loginForm">
+            <label for="username">Логин</label>
+            <input type="text" id="username" name="username" required placeholder="Введите логин"/>
+
+            <label for="password">Пароль</label>
+            <input type="password" id="password" name="password" required placeholder="Введите пароль"/>
+
+            <button type="submit">Войти</button>
+        </form>
+        <div id="result"></div>
+    </div>
+</div>
+<script th:src="@{/js/login.js}"></script>
+</body>
+</html>

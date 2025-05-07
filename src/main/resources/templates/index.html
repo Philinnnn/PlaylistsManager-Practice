@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Главная | Spotify API</title>
+    <link rel="stylesheet" th:href="@{/css/form-style.css}">
+</head>
+<body>
+<div class="wrapper">
+    <div class="card" style="text-align: center">
+        <h1>Spotify Playlist Generator</h1>
+        <p>Добро пожаловать! Войдите или зарегистрируйтесь, чтобы начать.</p>
+        <a th:href="@{/login}">
+            <button>🔐 Войти</button>
+        </a>
+        <a th:href="@{/register}">
+            <button>📝 Зарегистрироваться</button>
+        </a>
+    </div>
+</div>
+</body>
+</html>
