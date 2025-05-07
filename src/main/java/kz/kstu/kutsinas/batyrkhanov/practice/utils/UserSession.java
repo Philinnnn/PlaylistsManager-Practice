@@ -1,7 +1,16 @@
 package kz.kstu.kutsinas.batyrkhanov.practice.utils;
 
+import lombok.Getter;
+import lombok.Setter;
+
+/**
+ * Синглтон-класс для хранения информации о текущем пользователе Spotify в сессии.
+ */
+@Getter
+@Setter
 public class UserSession {
-    private static UserSession instance;
+
+    private static final UserSession INSTANCE = new UserSession();
 
     private String accessToken;
     private String refreshToken;
@@ -12,55 +21,6 @@ public class UserSession {
     private UserSession() {}
 
     public static UserSession getInstance() {
-        if (instance == null) {
-            instance = new UserSession();
-        }
-        return instance;
+        return INSTANCE;
     }
-
-    public String getAccessToken() {
-        return accessToken;
-    }
-
-    public String getRefreshToken() {
-        return refreshToken;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public String getDisplayName() {
-        return displayName;
-    }
-
-    public static void setInstance(UserSession instance) {
-        UserSession.instance = instance;
-    }
-
-    public void setAccessToken(String accessToken) {
-        this.accessToken = accessToken;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-
-    public void setRefreshToken(String refreshToken) {
-        this.refreshToken = refreshToken;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
-    }
-
-
 }

@@ -12,42 +12,64 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
+/**
+ * Контроллер, обрабатывающий аутентификацию через Spotify.
+ */
 @RestController
 public class SpotifyController {
 
-    @Autowired
-    private OAuth2AuthorizedClientService authorizedClientService;
-    @Autowired
-    private UsersRepo usersRepo;
+    private final OAuth2AuthorizedClientService authorizedClientService;
+    private final UsersRepo usersRepo;
 
+    @Autowired
+    public SpotifyController(OAuth2AuthorizedClientService authorizedClientService, UsersRepo usersRepo) {
+        this.authorizedClientService = authorizedClientService;
+        this.usersRepo = usersRepo;
+    }
 
     @GetMapping("/")
     public String home() {
         return "<a href='/oauth2/authorization/spotify'>Login with Spotify</a>";
     }
 
-
-
+    /**
+     * Обработка данных пользователя после авторизации через Spotify.
+     */
     @GetMapping("/user")
-    public Object user(OAuth2AuthenticationToken authentication) {
-        OAuth2AuthorizedClient client = authorizedClientService.loadAuthorizedClient(
-                authentication.getAuthorizedClientRegistrationId(),
-                authentication.getName());
-
-        String accessToken = client.getAccessToken().getTokenValue();
-        String refreshToken = client.getRefreshToken() != null
-                ? client.getRefreshToken().getTokenValue()
-                : null;
-
+    public Map<String, Object> user(OAuth2AuthenticationToken authentication) {
         Map<String, Object> attributes = authentication.getPrincipal().getAttributes();
 
+        String accessToken = getAccessToken(authentication);
+        String refreshToken = getRefreshToken(authentication);
+
+        saveToSession(attributes, accessToken, refreshToken);
+        saveToDatabase(attributes);
+
+        return attributes;
+    }
+
+    private String getAccessToken(OAuth2AuthenticationToken auth) {
+        OAuth2AuthorizedClient client = authorizedClientService.loadAuthorizedClient(
+                auth.getAuthorizedClientRegistrationId(), auth.getName());
+        return client.getAccessToken().getTokenValue();
+    }
+
+    private String getRefreshToken(OAuth2AuthenticationToken auth) {
+        OAuth2AuthorizedClient client = authorizedClientService.loadAuthorizedClient(
+                auth.getAuthorizedClientRegistrationId(), auth.getName());
+        return client.getRefreshToken() != null ? client.getRefreshToken().getTokenValue() : null;
+    }
+
+    private void saveToSession(Map<String, Object> attributes, String accessToken, String refreshToken) {
         UserSession session = UserSession.getInstance();
         session.setUserId((String) attributes.get("id"));
         session.setEmail((String) attributes.get("email"));
         session.setDisplayName((String) attributes.get("display_name"));
         session.setAccessToken(accessToken);
         session.setRefreshToken(refreshToken);
+    }
 
+    private void saveToDatabase(Map<String, Object> attributes) {
         User user = new User(
                 (String) attributes.get("id"),
                 (String) attributes.get("display_name"),
@@ -55,14 +77,6 @@ public class SpotifyController {
                 (String) attributes.get("country"),
                 (String) attributes.get("product")
         );
-
         usersRepo.save(user);
-
-
-        return attributes;
     }
-
-
-
 }
-
