@@ -1,169 +1,51 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Создать плейлист в Spotify</title>
-    <style>
-        body {
-            background-color: #121212;
-            color: #ffffff;
-            font-family: 'Circular', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        .container {
-            background-color: #1e1e1e;
-            padding: 40px;
-            border-radius: 12px;
-            width: 100%;
-            max-width: 500px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-        }
-
-        h1 {
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 24px;
-            text-align: center;
-            color: #ffffff;
-        }
-
-        form {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        label {
-            font-size: 14px;
-            font-weight: 600;
-            color: #b3b3b3;
-            margin-bottom: 8px;
-        }
-
-        input[type="text"],
-        select {
-            background-color: #2a2a2a;
-            border: 1px solid #3a3a3a;
-            border-radius: 4px;
-            padding: 12px;
-            font-size: 16px;
-            color: #ffffff;
-            width: 100%;
-            box-sizing: border-box;
-            transition: border-color 0.3s ease;
-        }
-
-        input[type="text"]:focus,
-        select:focus {
-            outline: none;
-            border-color: #1d75de; /* Синий акцент */
-        }
-
-        button {
-            background-color: #1d75de; /* Синий вместо зеленого */
-            color: #ffffff;
-            border: none;
-            border-radius: 500px;
-            padding: 12px 24px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            margin-top: 16px;
-        }
-
-        button:hover {
-            background-color: #2a8cff; /* Светлее синий при наведении */
-        }
-
-        #result {
-            margin-top: 24px;
-            font-size: 14px;
-            color: #b3b3b3;
-            text-align: center;
-        }
-
-        #result.success {
-            color: #1d75de; /* Синий для успешного сообщения */
-        }
-
-        #result.error {
-            color: #ff4d4d; /* Красный для ошибок */
-        }
-    </style>
+    <link rel="stylesheet" href="/css/createPlaylist.css" />
 </head>
 <body>
-<div class="container">
-    <h1>Создать плейлист</h1>
-    <form id="createPlaylistForm">
-        <label for="playlistName">Название плейлиста:</label>
-        <input type="text" id="playlistName" name="playlistName" required>
+<div class="wrapper">
+    <div class="card">
+        <h1>Создание Spotify-плейлиста</h1>
+        <form id="createPlaylistForm">
+            <label for="playlistName">Название:</label>
+            <input type="text" id="playlistName" name="playlistName" placeholder="Мой плейлист" required />
 
-        <label for="genre">Выберите жанр:</label>
-        <select id="genre" name="genre">
-            <option value="">Автоматический выбор жанра</option>
-            <option value="pop">Pop</option>
-            <option value="rock">Rock</option>
-            <option value="hip-hop">Hip-Hop</option>
-            <option value="jazz">Jazz</option>
-            <option value="classical">Classical</option>
-            <option value="electronic">Electronic</option>
-            <option value="indie">Indie</option>
-            <option value="metal">Metal</option>
-            <option value="rnb">R&B</option>
-            <option value="folk">Folk</option>
-        </select>
+            <label for="genre">Жанр:</label>
+            <select id="genre" name="genre">
+                <option value="">Авто</option>
+                <option value="pop">Pop</option>
+                <option value="rock">Rock</option>
+                <option value="hip-hop">Hip-Hop</option>
+                <option value="jazz">Jazz</option>
+                <option value="classical">Classical</option>
+                <option value="electronic">Electronic</option>
+                <option value="indie">Indie</option>
+                <option value="metal">Metal</option>
+                <option value="rnb">R&B</option>
+                <option value="folk">Folk</option>
+            </select>
 
-        <label for="region">Выберите регион:</label>
-        <select id="region" name="region">
-            <option value="RU">Россия (RU)</option>
-            <option value="US">США (US)</option>
-            <option value="GB">Великобритания (GB)</option>
-            <option value="DE">Германия (DE)</option>
-            <option value="FR">Франция (FR)</option>
-            <option value="JP">Япония (JP)</option>
-            <option value="BR">Бразилия (BR)</option>
-            <option value="AU">Австралия (AU)</option>
-        </select>
+            <label for="region">Регион:</label>
+            <select id="region" name="region">
+                <option value="RU">Россия</option>
+                <option value="US">США</option>
+                <option value="GB">Великобритания</option>
+                <option value="DE">Германия</option>
+                <option value="FR">Франция</option>
+                <option value="JP">Япония</option>
+                <option value="BR">Бразилия</option>
+                <option value="AU">Австралия</option>
+            </select>
 
-        <button type="submit">Создать плейлист</button>
-    </form>
-    <div id="result"></div>
+            <button type="submit">Создать</button>
+        </form>
+        <div id="result"></div>
+    </div>
 </div>
-
-<script>
-    document.getElementById("createPlaylistForm").addEventListener("submit", function(e) {
-        e.preventDefault();
-        const playlistName = document.getElementById("playlistName").value;
-        const genre = document.getElementById("genre").value;
-        const region = document.getElementById("region").value;
-
-        fetch("/spotify/create-playlist", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ playlistName: playlistName, genre: genre, region: region })
-        })
-            .then(response => response.text())
-            .then(data => {
-                const resultDiv = document.getElementById("result");
-                resultDiv.innerText = data;
-                resultDiv.className = "success";
-            })
-            .catch(error => {
-                const resultDiv = document.getElementById("result");
-                resultDiv.innerText = "Ошибка: " + error;
-                resultDiv.className = "error";
-            });
-    });
-</script>
+<script src="/js/createPlaylist.js"></script>
 </body>
 </html>
