@@ -16,5 +16,6 @@ public class EnvPropertyLoader {
                 System.setProperty(entry.getKey(), entry.getValue());
             }
         });
+        System.out.println("Environment variables successfully loaded from .env file");
     }
 }
