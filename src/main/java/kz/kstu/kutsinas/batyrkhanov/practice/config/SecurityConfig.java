@@ -25,6 +25,7 @@ public class SecurityConfig {
                 )
                 .oauth2Login(oauth -> oauth
                         .loginPage("/login")
+                        .defaultSuccessUrl("/user", true)
                 )
                 .build();
     }
