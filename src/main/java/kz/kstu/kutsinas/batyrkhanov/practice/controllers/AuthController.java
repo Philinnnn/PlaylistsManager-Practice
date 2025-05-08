@@ -52,11 +52,7 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("User already exists");
         }
 
-        AppUser user = new AppUser();
-        user.setUsername(username);
-        user.setPassword(passwordEncoder.encode(rawPassword));
-        appUserRepo.save(user);
-
+        AppUser user = registerNewUser(username, rawPassword);
         return ResponseEntity.ok("User registered successfully");
     }
 
@@ -69,35 +65,15 @@ public class AuthController {
         String password = request.get("password");
 
         try {
-            Authentication auth = authManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(username, password)
-            );
+            Authentication auth = authenticateUser(username, password);
+            saveSecurityContext(auth, httpRequest);
 
-            SecurityContext context = SecurityContextHolder.createEmptyContext();
-            context.setAuthentication(auth);
-            SecurityContextHolder.setContext(context);
-            httpRequest.getSession().setAttribute(
-                    HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, context
-            );
             AppUser user = appUserRepo.findByUsername(username)
                     .orElseThrow(() -> new RuntimeException("User not found in DB"));
 
-            session.setUsername(user.getUsername());
-            session.setUserId(String.valueOf(user.getId()));
-
-            if (user.getSpotifyUser() != null) {
-                var spotifyUser = user.getSpotifyUser();
-                session.setEmail(spotifyUser.getEmail());
-                session.setDisplayName(spotifyUser.getDisplayName());
-                session.setAccessToken(spotifyUser.getAccessToken());
-                session.setRefreshToken(spotifyUser.getRefreshToken());
-            } else {
-                session.setEmail("local user@" + user.getUsername());
-                session.setDisplayName(user.getUsername());
-            }
+            loadUserSession(user);
 
             System.out.println("Session: " + session);
-
             return ResponseEntity.ok("Login successful");
         } catch (BadCredentialsException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
@@ -109,8 +85,46 @@ public class AuthController {
      */
     @PostMapping("/logout")
     public ResponseEntity<String> logout(HttpServletRequest request) {
-        request.getSession().invalidate(); // сбрасываем сессию
-        SecurityContextHolder.clearContext(); // сбрасываем контекст безопасности
+        request.getSession().invalidate();
+        SecurityContextHolder.clearContext();
         return ResponseEntity.ok("Logged out successfully");
+    }
+
+    private AppUser registerNewUser(String username, String rawPassword) {
+        AppUser user = new AppUser();
+        user.setUsername(username);
+        user.setPassword(passwordEncoder.encode(rawPassword));
+        return appUserRepo.save(user);
+    }
+
+    private Authentication authenticateUser(String username, String password) {
+        return authManager.authenticate(
+                new UsernamePasswordAuthenticationToken(username, password)
+        );
+    }
+
+    private void saveSecurityContext(Authentication auth, HttpServletRequest request) {
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
+        context.setAuthentication(auth);
+        SecurityContextHolder.setContext(context);
+        request.getSession().setAttribute(
+                HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, context
+        );
+    }
+
+    private void loadUserSession(AppUser user) {
+        session.setUsername(user.getUsername());
+        session.setUserId(String.valueOf(user.getId()));
+
+        if (user.getSpotifyUser() != null) {
+            var spotify = user.getSpotifyUser();
+            session.setEmail(spotify.getEmail());
+            session.setDisplayName(spotify.getDisplayName());
+            session.setAccessToken(spotify.getAccessToken());
+            session.setRefreshToken(spotify.getRefreshToken());
+        } else {
+            session.setEmail("local user@" + user.getUsername());
+            session.setDisplayName(user.getUsername());
+        }
     }
 }
