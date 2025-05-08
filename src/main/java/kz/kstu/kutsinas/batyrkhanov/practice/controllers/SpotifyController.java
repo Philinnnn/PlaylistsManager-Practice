@@ -35,46 +35,52 @@ public class SpotifyController {
     }
 
     /**
-     * Метод вызывается после успешной авторизации через Spotify
+     * Обработка callback-а после авторизации через Spotify
      */
     @GetMapping("/callback")
     public ResponseEntity<String> handleSpotifyCallback(OAuth2AuthenticationToken authentication) {
-        // Проверка: пользователь приложения вошёл?
         String appUsername = session.getUsername();
         if (appUsername == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("You must be logged in to link Spotify account.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("You must be logged in to link Spotify account.");
         }
 
-        // Получаем Spotify-данные
         Map<String, Object> attributes = authentication.getPrincipal().getAttributes();
         String accessToken = getAccessToken(authentication);
         String refreshToken = getRefreshToken(authentication);
 
-        // Создаём объект Spotify-пользователя
-        User spotifyUser = new User(
-                (String) attributes.get("id"),
-                (String) attributes.get("display_name"),
-                (String) attributes.get("email"),
-                (String) attributes.get("country"),
-                (String) attributes.get("product"),
-                null // appUser будет установлен позже
-        );
+        // создаём и заполняем Spotify-пользователя
+        User spotifyUser = new User();
+        spotifyUser.setId((String) attributes.get("id"));
+        spotifyUser.setDisplayName((String) attributes.get("display_name"));
+        spotifyUser.setEmail((String) attributes.get("email"));
+        spotifyUser.setCountry((String) attributes.get("country"));
+        spotifyUser.setProduct((String) attributes.get("product"));
+        spotifyUser.setAccessToken(accessToken);
+        spotifyUser.setRefreshToken(refreshToken);
 
+        // сохраняем Spotify-пользователя
         usersRepo.save(spotifyUser);
 
-        // Находим текущего пользователя приложения и связываем
+        // получаем AppUser из БД
         AppUser appUser = appUserRepo.findByUsername(appUsername)
                 .orElseThrow(() -> new RuntimeException("AppUser not found"));
 
+        // устанавливаем двустороннюю связь
         appUser.setSpotifyUser(spotifyUser);
+        spotifyUser.setAppUser(appUser);
+
+        // сохраняем AppUser с привязкой
         appUserRepo.save(appUser);
 
-        // Сохраняем сессионные данные
+        // обновляем сессию
         session.setAccessToken(accessToken);
         session.setRefreshToken(refreshToken);
         session.setUserId(spotifyUser.getId());
         session.setEmail(spotifyUser.getEmail());
         session.setDisplayName(spotifyUser.getDisplayName());
+
+        System.out.println("Session: " + session);
 
         return ResponseEntity.ok("Spotify аккаунт успешно привязан!");
     }
@@ -90,6 +96,4 @@ public class SpotifyController {
                 auth.getAuthorizedClientRegistrationId(), auth.getName());
         return client.getRefreshToken() != null ? client.getRefreshToken().getTokenValue() : null;
     }
-
-
 }

@@ -11,7 +11,7 @@ import org.springframework.web.context.WebApplicationContext;
 @Getter
 @Setter
 @Component
-@ToString(exclude = {"accessToken", "refreshToken"})
+@ToString
 @Scope(value = WebApplicationContext.SCOPE_SESSION, proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class UserSession {
     private String accessToken;

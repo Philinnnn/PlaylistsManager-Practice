@@ -29,6 +29,12 @@ public class User {
     @Column(name = "product")
     private String product;
 
+    @Column(name = "access_token", length = 512)
+    private String accessToken;
+
+    @Column(name = "refresh_token", length = 512)
+    private String refreshToken;
+
     @OneToOne(mappedBy = "spotifyUser")
     private AppUser appUser;
 }

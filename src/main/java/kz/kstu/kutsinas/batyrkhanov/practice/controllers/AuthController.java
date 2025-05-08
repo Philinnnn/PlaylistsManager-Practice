@@ -76,11 +76,27 @@ public class AuthController {
             SecurityContext context = SecurityContextHolder.createEmptyContext();
             context.setAuthentication(auth);
             SecurityContextHolder.setContext(context);
+            httpRequest.getSession().setAttribute(
+                    HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, context
+            );
+            AppUser user = appUserRepo.findByUsername(username)
+                    .orElseThrow(() -> new RuntimeException("User not found in DB"));
 
-            // сохраняем в сессию
-            httpRequest.getSession().setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, context);
+            session.setUsername(user.getUsername());
+            session.setUserId(String.valueOf(user.getId()));
 
-            session.setUsername(username);
+            if (user.getSpotifyUser() != null) {
+                var spotifyUser = user.getSpotifyUser();
+                session.setEmail(spotifyUser.getEmail());
+                session.setDisplayName(spotifyUser.getDisplayName());
+                session.setAccessToken(spotifyUser.getAccessToken());
+                session.setRefreshToken(spotifyUser.getRefreshToken());
+            } else {
+                session.setEmail("local user@" + user.getUsername());
+                session.setDisplayName(user.getUsername());
+            }
+
+            System.out.println("Session: " + session);
 
             return ResponseEntity.ok("Login successful");
         } catch (BadCredentialsException e) {
