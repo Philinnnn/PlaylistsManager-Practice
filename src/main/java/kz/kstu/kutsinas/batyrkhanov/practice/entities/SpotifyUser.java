@@ -3,15 +3,28 @@ package kz.kstu.kutsinas.batyrkhanov.practice.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.Map;
+
 /**
  * Представляет пользователя Spotify, сохраняемого в БД.
  */
 @Entity
-@Table(name = "users")
+@Table(name = "spotify_users")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class User {
+public class SpotifyUser {
+
+    public SpotifyUser(Map<String, Object> attributes, String accessToken, String refreshToken)
+    {
+        id = (String) attributes.get("id");
+        displayName = (String) attributes.get("display_name");
+        email = (String) attributes.get("email");
+        country = (String) attributes.get("country");
+        product = (String) attributes.get("product");
+        this.accessToken = accessToken;
+        this.refreshToken = refreshToken;
+    }
 
     @Id
     @Column(name = "id")
