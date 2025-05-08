@@ -1,15 +1,25 @@
-document.getElementById("createPlaylistForm").addEventListener("submit", function(e) {
+document.getElementById("createPlaylistForm").addEventListener("submit", function (e) {
     e.preventDefault();
-    const playlistName = document.getElementById("playlistName").value;
-    const genre = document.getElementById("genre").value;
-    const region = document.getElementById("region").value;
 
-    fetch("/spotify/create-playlist", {
+    const body = {
+        name: document.getElementById("playlistName").value,
+        description: "Создан с фронта",
+        isPublic: true,
+        trackRequests: [
+            { trackName: "девочка с каре", artistName: "МУККА" },
+            { trackName: "клятвы", artistName: "Pyrokinesis" },
+            { trackName: "ПОЛВТОРОГО", artistName: "KEER" },
+            { trackName: "я приду к тебе с клубникой в декабре", artistName: "Pyrokinesis" },
+        ]
+            // Пока сделал заглушку, если хочешь, можешь фронт сделать
+    };
+
+    fetch("/create", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
         },
-        body: JSON.stringify({ playlistName, genre, region })
+        body: JSON.stringify(body)
     })
         .then(response => response.text())
         .then(data => {

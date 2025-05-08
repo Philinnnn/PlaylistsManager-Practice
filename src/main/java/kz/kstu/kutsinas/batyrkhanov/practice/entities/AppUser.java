@@ -11,6 +11,8 @@ import lombok.*;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(exclude = "spotifyUser")
+
 public class AppUser {
 
     @Id

@@ -1,130 +1,50 @@
 package kz.kstu.kutsinas.batyrkhanov.practice.controllers;
 
 import jakarta.servlet.http.HttpServletRequest;
-import kz.kstu.kutsinas.batyrkhanov.practice.entities.AppUser;
-import kz.kstu.kutsinas.batyrkhanov.practice.repositories.AppUserRepo;
-import kz.kstu.kutsinas.batyrkhanov.practice.utils.UserSession;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.*;
-import org.springframework.security.authentication.*;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
-import org.springframework.web.bind.annotation.*;
+import kz.kstu.kutsinas.batyrkhanov.practice.services.AuthService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.*;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
+@RequiredArgsConstructor
 public class AuthController {
 
-    private final AppUserRepo appUserRepo;
-    private final PasswordEncoder passwordEncoder;
-    private final AuthenticationManager authManager;
-    private final UserSession session;
+    private final AuthService authService;
 
-    @Autowired
-    public AuthController(AppUserRepo appUserRepo,
-                          PasswordEncoder passwordEncoder,
-                          AuthenticationManager authManager,
-                          UserSession session) {
-        this.appUserRepo = appUserRepo;
-        this.passwordEncoder = passwordEncoder;
-        this.authManager = authManager;
-        this.session = session;
-    }
-
-    /**
-     * Регистрация нового пользователя приложения
-     */
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody Map<String, String> request) {
-        String username = request.get("username");
-        String rawPassword = request.get("password");
-
-        if (username == null || rawPassword == null) {
-            return ResponseEntity.badRequest().body("Username and password are required");
+        try {
+            authService.registerUser(request.get("username"), request.get("password"));
+            return ResponseEntity.ok("User registered successfully");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
-
-        if (appUserRepo.findByUsername(username).isPresent()) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("User already exists");
-        }
-
-        AppUser user = registerNewUser(username, rawPassword);
-        return ResponseEntity.ok("User registered successfully");
     }
 
-    /**
-     * Вход в систему
-     */
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody Map<String, String> request, HttpServletRequest httpRequest) {
-        String username = request.get("username");
-        String password = request.get("password");
-
         try {
-            Authentication auth = authenticateUser(username, password);
-            saveSecurityContext(auth, httpRequest);
-
-            AppUser user = appUserRepo.findByUsername(username)
-                    .orElseThrow(() -> new RuntimeException("User not found in DB"));
-
-            loadUserSession(user);
-
-            System.out.println("Session: " + session);
+            authService.loginUser(request.get("username"), request.get("password"), httpRequest);
             return ResponseEntity.ok("Login successful");
         } catch (BadCredentialsException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         }
     }
 
-    /**
-     * Выход из системы
-     */
     @PostMapping("/logout")
     public ResponseEntity<String> logout(HttpServletRequest request) {
-        request.getSession().invalidate();
-        SecurityContextHolder.clearContext();
+        authService.logout(request);
         return ResponseEntity.ok("Logged out successfully");
-    }
-
-    private AppUser registerNewUser(String username, String rawPassword) {
-        AppUser user = new AppUser();
-        user.setUsername(username);
-        user.setPassword(passwordEncoder.encode(rawPassword));
-        return appUserRepo.save(user);
-    }
-
-    private Authentication authenticateUser(String username, String password) {
-        return authManager.authenticate(
-                new UsernamePasswordAuthenticationToken(username, password)
-        );
-    }
-
-    private void saveSecurityContext(Authentication auth, HttpServletRequest request) {
-        SecurityContext context = SecurityContextHolder.createEmptyContext();
-        context.setAuthentication(auth);
-        SecurityContextHolder.setContext(context);
-        request.getSession().setAttribute(
-                HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, context
-        );
-    }
-
-    private void loadUserSession(AppUser user) {
-        session.setUsername(user.getUsername());
-        session.setUserId(String.valueOf(user.getId()));
-
-        if (user.getSpotifyUser() != null) {
-            var spotify = user.getSpotifyUser();
-            session.setEmail(spotify.getEmail());
-            session.setDisplayName(spotify.getDisplayName());
-            session.setAccessToken(spotify.getAccessToken());
-            session.setRefreshToken(spotify.getRefreshToken());
-        } else {
-            session.setEmail("local user@" + user.getUsername());
-            session.setDisplayName(user.getUsername());
-        }
     }
 }

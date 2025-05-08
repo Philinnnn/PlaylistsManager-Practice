@@ -1,14 +1,12 @@
 package kz.kstu.kutsinas.batyrkhanov.practice.entities;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
+import se.michaelthelin.spotify.model_objects.specification.Track;
 
-/**
- * Представляет плейлист Spotify, сохраняемый в БД.
- */
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "playlists")
 @Data
@@ -29,6 +27,14 @@ public class Playlist {
     @Column(name = "is_public")
     private Boolean isPublic;
 
-    @Column(name = "owner_id")
-    private String ownerId;
+    @ManyToOne
+    @JoinColumn(name = "owner_id")
+    private AppUser owner;
+
+    @Transient
+    private List<Track> tracks = new ArrayList<>();
+
+    public void addTrack(Track track) {
+        tracks.add(track);
+    }
 }

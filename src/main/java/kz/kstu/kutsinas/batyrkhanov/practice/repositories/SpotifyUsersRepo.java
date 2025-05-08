@@ -11,5 +11,4 @@ import java.util.Optional;
 public interface SpotifyUsersRepo extends JpaRepository<SpotifyUser,String> {
     @NonNull
     Optional<SpotifyUser> findById(String id);
-    Optional<SpotifyUser> findByEmail(String email);
 }

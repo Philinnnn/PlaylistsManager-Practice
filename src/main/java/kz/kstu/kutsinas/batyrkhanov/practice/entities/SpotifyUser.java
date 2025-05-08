@@ -12,7 +12,8 @@ import java.util.Map;
 @Table(name = "spotify_users")
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
+@ToString(exclude = "appUser")
+
 public class SpotifyUser {
 
     public SpotifyUser(Map<String, Object> attributes, String accessToken, String refreshToken)
