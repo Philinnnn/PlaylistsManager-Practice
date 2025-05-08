@@ -30,5 +30,10 @@ public class PageController {
     public String createPlaylist() {
         return "createPlaylist";
     }
+
+    @GetMapping("/spotify/create-playlist-page")
+    public String createPlaylistPage() {
+        return "createPlaylist";
+    }
 }
 

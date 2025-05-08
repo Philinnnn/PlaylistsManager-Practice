@@ -87,3 +87,11 @@ button:hover {
 #result.error {
     color: #ff4d4d;
 }
+
+.button-link {
+    display: block;
+    margin-top: 20px;
+}
+.button-link:first-child {
+    margin-top: 0;
+}

@@ -14,9 +14,16 @@
             <button>🔗 Привязать Spotify</button>
         </a>
 
+        <a th:href="@{/spotify/create-playlist-page}" class="button-link">
+            <button>🎵 Создать плейлист</button>
+        </a>
+
         <form th:action="@{/auth/logout}" method="post" style="margin-top: 20px;">
             <button type="submit">🚪 Выйти</button>
         </form>
+
+
+
     </div>
 </div>
 <script th:src="@{/js/dashboard.js}"></script>
