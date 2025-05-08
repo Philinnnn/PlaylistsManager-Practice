@@ -37,7 +37,7 @@ public class SecurityConfig {
                 .map(user -> User.builder()
                         .username(user.getUsername())
                         .password(user.getPassword())
-                        .roles("USER") // если поле role не используется
+                        .roles("USER")
                         .build())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
