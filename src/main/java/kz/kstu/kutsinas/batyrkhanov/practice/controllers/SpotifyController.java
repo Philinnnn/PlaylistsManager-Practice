@@ -4,7 +4,7 @@ import kz.kstu.kutsinas.batyrkhanov.practice.entities.AppUser;
 import kz.kstu.kutsinas.batyrkhanov.practice.entities.SpotifyUser;
 import kz.kstu.kutsinas.batyrkhanov.practice.enums.TokenType;
 import kz.kstu.kutsinas.batyrkhanov.practice.repositories.AppUserRepo;
-import kz.kstu.kutsinas.batyrkhanov.practice.repositories.UsersRepo;
+import kz.kstu.kutsinas.batyrkhanov.practice.repositories.SpotifyUsersRepo;
 import kz.kstu.kutsinas.batyrkhanov.practice.utils.UserSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
@@ -24,13 +24,13 @@ public class SpotifyController {
 
     private final OAuth2AuthorizedClientService authorizedClientService;
     private final AppUserRepo appUserRepo;
-    private final UsersRepo usersRepo;
+    private final SpotifyUsersRepo usersRepo;
     private final UserSession session;
 
     @Autowired
     public SpotifyController(OAuth2AuthorizedClientService authorizedClientService,
                              AppUserRepo appUserRepo,
-                             UsersRepo usersRepo,
+                             SpotifyUsersRepo usersRepo,
                              UserSession session) {
         this.authorizedClientService = authorizedClientService;
         this.appUserRepo = appUserRepo;

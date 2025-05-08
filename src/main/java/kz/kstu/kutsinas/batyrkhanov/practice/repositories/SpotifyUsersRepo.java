@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface UsersRepo extends JpaRepository<SpotifyUser,String> {
+public interface SpotifyUsersRepo extends JpaRepository<SpotifyUser,String> {
     @NonNull
     Optional<SpotifyUser> findById(String id);
     Optional<SpotifyUser> findByEmail(String email);
