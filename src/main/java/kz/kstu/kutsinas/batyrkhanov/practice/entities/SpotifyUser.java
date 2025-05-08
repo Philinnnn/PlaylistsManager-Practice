@@ -17,11 +17,11 @@ public class SpotifyUser {
 
     public SpotifyUser(Map<String, Object> attributes, String accessToken, String refreshToken)
     {
-        id = (String) attributes.get("id");
-        displayName = (String) attributes.get("display_name");
-        email = (String) attributes.get("email");
-        country = (String) attributes.get("country");
-        product = (String) attributes.get("product");
+        this.id = (String) attributes.get("id");
+        this.displayName = (String) attributes.get("display_name");
+        this.email = (String) attributes.get("email");
+        this.country = (String) attributes.get("country");
+        this.product = (String) attributes.get("product");
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
     }
