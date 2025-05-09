@@ -155,8 +155,7 @@ public class PlaylistService {
                 request.getName(),
                 request.getDescription(),
                 request.getIsPublic(),
-                user,
-                null
+                user
         );
         playlistsRepo.save(playlist);
     }

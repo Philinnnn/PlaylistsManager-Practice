@@ -1,11 +1,9 @@
 package kz.kstu.kutsinas.batyrkhanov.practice.entities;
 
 import jakarta.persistence.*;
-import lombok.*;
-import se.michaelthelin.spotify.model_objects.specification.Track;
-
-import java.util.ArrayList;
-import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "playlists")
@@ -30,11 +28,4 @@ public class Playlist {
     @ManyToOne
     @JoinColumn(name = "owner_id")
     private AppUser owner;
-
-    @Transient
-    private List<Track> tracks = new ArrayList<>();
-
-    public void addTrack(Track track) {
-        tracks.add(track);
-    }
 }

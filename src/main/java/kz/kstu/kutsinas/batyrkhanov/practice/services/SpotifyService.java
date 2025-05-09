@@ -25,6 +25,7 @@ public class SpotifyService {
 
     /**
      * Устанавливает связь между пользователем приложения и его аккаунтом Spotify.
+     *
      * @param authentication OAuth2AuthenticationToken, полученный от Spring Security после успешной аутентификации.
      */
     public void handleSpotifyCallback(OAuth2AuthenticationToken authentication) {
@@ -55,6 +56,7 @@ public class SpotifyService {
 
     /**
      * Получает токен доступа или обновления для указанного типа.
+     *
      * @param auth OAuth2AuthenticationToken, полученный от Spring Security после успешной аутентификации.
      * @param type Тип токена (ACCESS или REFRESH).
      * @return Значение токена.
