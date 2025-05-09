@@ -62,9 +62,10 @@ public class SpotifyService {
      *
      * @return Список треков.
      */
-    //
-    public List<Track> getRandomTracks() {
+    public List<Track> getRandomTracks(String genre, String region, String mood) {
         System.out.println("[SpotifyService] getRandomTracks() — старт");
+
+        //TODO: добавить фильтрацию по жанру, региону и настроению
 
         String token = session.getAccessToken();
         if (token == null || token.isBlank()) {
@@ -97,7 +98,6 @@ public class SpotifyService {
                 String artist = track.getArtists().length > 0 ? track.getArtists()[0].getName() : "Неизвестен";
                 System.out.println("  - " + name + " / " + artist);
             }
-
             return selected;
         } catch (Exception e) {
             System.out.println("[SpotifyService] Ошибка при получении топ-треков: " + e.getMessage());
@@ -123,5 +123,24 @@ public class SpotifyService {
                     ? client.getRefreshToken().getTokenValue()
                     : null;
         };
+    }
+
+    /**
+     * Ищет трек в Spotify по имени и имени исполнителя.
+     *
+     * @param trackName  Имя трека.
+     * @param artistName Имя исполнителя.
+     * @return Найденный трек или пустое значение, если не найден.
+     */
+    public Optional<Track> searchTrack(String trackName, String artistName) {
+        try {
+            var query = "track:" + trackName + " artist:" + artistName;
+            System.out.println("[SpotifyService] Поиск в Spotify: " + query);
+            var spotifyApi = new SpotifyApi.Builder().setAccessToken(session.getAccessToken()).build();
+            var result = spotifyApi.searchTracks(query).limit(1).build().execute().getItems();
+            return result.length > 0 ? Optional.of(result[0]) : Optional.empty();
+        } catch (Exception e) {
+            return Optional.empty();
+        }
     }
 }

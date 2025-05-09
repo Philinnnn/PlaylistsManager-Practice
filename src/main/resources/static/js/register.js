@@ -18,7 +18,7 @@ document.getElementById("registerForm").addEventListener("submit", async functio
         statusElement.style.color = "green";
         setTimeout(() => {
             window.location.href = "/login";
-        }, 1000);
+        }, );
     } else {
         statusElement.style.color = "red";
     }

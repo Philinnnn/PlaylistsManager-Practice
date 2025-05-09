@@ -19,7 +19,7 @@ document.getElementById("loginForm").addEventListener("submit", async function (
         result.className = "success";
         setTimeout(() => {
             window.location.href = "/dashboard";
-        }, 800);
+        }, );
     } else {
         result.className = "error";
     }

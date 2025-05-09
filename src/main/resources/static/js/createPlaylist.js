@@ -11,10 +11,13 @@ document.getElementById("createPlaylistForm").addEventListener("submit", async f
     resultDiv.className = "";
 
     try {
-        // Получаем рекомендации с параметрами
         const query = new URLSearchParams({ genre, region, mood }).toString();
-        const recommendationsRes = await fetch(`/lastfm/lastfm?${query}`);
+        const recommendationsRes = await fetch(`/lastfm/generate-recommendations?${query}`);
         const trackRequests = await recommendationsRes.json();
+
+        console.log("Запрос: " + query);
+        console.log("Рекомендации от Last.fm:", recommendationsRes);
+        console.log("Запрос в Spotify:", trackRequests);
 
         const body = {
             name,

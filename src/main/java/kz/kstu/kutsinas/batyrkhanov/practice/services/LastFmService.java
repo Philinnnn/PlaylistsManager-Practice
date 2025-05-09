@@ -2,139 +2,118 @@ package kz.kstu.kutsinas.batyrkhanov.practice.services;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import kz.kstu.kutsinas.batyrkhanov.practice.dto.TrackSearchQuery;
-import kz.kstu.kutsinas.batyrkhanov.practice.utils.UserSession;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import se.michaelthelin.spotify.SpotifyApi;
-import se.michaelthelin.spotify.model_objects.specification.Artist;
-import se.michaelthelin.spotify.model_objects.specification.AudioFeatures;
 import se.michaelthelin.spotify.model_objects.specification.Track;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 
 @Service
 public class LastFmService {
     private final RestTemplate rest = new RestTemplate();
     private final String apiKey = System.getProperty("LAST_FM_API_KEY");
-    private final UserSession session;
+    private final SpotifyService spotifyService;
 
-    public LastFmService(UserSession session) {
-        this.session = session;
+    public LastFmService(SpotifyService spotifyService) {
+        this.spotifyService = spotifyService;
     }
 
-    public List<TrackSearchQuery> getRecommendations(List<Track> seeds, String genre, String region, String mood) {
-        System.out.printf("[LastFmService] Старт генерации рекомендаций\n  - Жанр: %s\n  - Регион: %s\n  - Настроение: %s\n", genre, region, mood);
-        List<TrackSearchQuery> recs = new ArrayList<>();
-        Set<String> seen = new HashSet<>();
-        SpotifyApi api = new SpotifyApi.Builder().setAccessToken(session.getAccessToken()).build();
+    /**
+     * Получает рекомендации на основе начальных сидов, жанра, региона и настроения.
+     *
+     * @param initialSeeds начальной сиды для генерации рекомендаций.
+     * @param genre        жанр музыки.
+     * @param region       регион.
+     * @param mood         настроение.
+     * @return список рекомендаций в виде TrackSearchQuery.
+     */
+    public List<TrackSearchQuery> getRecommendations(List<Track> initialSeeds, String genre, String region, String mood) {
+        var recs = new ArrayList<TrackSearchQuery>();
+        var seen = new HashSet<String>();
 
-        for (Track t : seeds) {
-            if (t.getArtists().length == 0) continue;
-            String artist = t.getArtists()[0].getName(), name = t.getName();
-            System.out.println("  > Анализ seed-трека: " + name + " / " + artist);
+        List<Track> seeds = new ArrayList<>(initialSeeds);
+        int attempts = 15;
 
-            for (TrackSearchQuery q : getSimilarTracks(artist, name, 10)) {
-                if (!seen.add(q.getTrackName() + "|" + q.getArtistName())) continue;
-                Optional<Track> opt = searchSpotifyTrack(api, q.getTrackName(), q.getArtistName());
-                if (opt.isEmpty()) continue;
+        while (recs.size() < 50 && attempts-- > 0) {
+            for (var track : seeds) {
+                if (track.getArtists().length == 0) continue;
+                var artist = track.getArtists()[0].getName();
+                var name = track.getName();
+                System.out.println("  > " + name + " / " + artist);
 
-                Track found = opt.get();
-                AudioFeatures f = getAudioFeatures(api, found.getId());
-                Artist a = getArtist(api, found.getArtists()[0].getId());
+                for (var q : getSimilarTracks(artist, name, 10)) {
+                    String key = q.getTrackName() + "|" + q.getArtistName();
+                    if (!seen.add(key)) continue;
 
-                boolean genreOk = genre == null || artistHasGenre(a, genre);
-                boolean moodOk = mood == null || moodMatches(f, mood);
+                    var found = spotifyService.searchTrack(q.getTrackName(), q.getArtistName()).orElse(null);
+                    if (found != null)
+                        recs.add(new TrackSearchQuery(found.getName(), found.getArtists()[0].getName()));
 
-                System.out.printf("    ✓ %s / %s — жанр: %s, настроение: %s\n",
-                        found.getName(), found.getArtists()[0].getName(),
-                        genreOk ? "OK" : "NO", moodOk ? "OK" : "NO");
+                    if (recs.size() >= 50) break;
+                }
+                if (recs.size() >= 50) break;
+            }
 
-                if (genreOk && moodOk)
-                    recs.add(new TrackSearchQuery(found.getName(), found.getArtists()[0].getName()));
+            if (recs.size() < 50) {
+                System.out.println("Недостаточно треков, получаем новые сиды...");
+                seeds = spotifyService.getRandomTracks(genre, region, mood);
             }
         }
 
-        System.out.println("[LastFmService] Финальный список рекомендаций: " + recs.size() + " треков");
         return recs;
     }
 
+    /**
+     * Получает похожие треки на основе имени исполнителя и названия трека.
+     *
+     * @param artist имя исполнителя.
+     * @param track  название трека.
+     * @param limit  максимальное количество результатов.
+     * @return список похожих треков в виде TrackSearchQuery.
+     */
     private List<TrackSearchQuery> getSimilarTracks(String artist, String track, int limit) {
         try {
-            String url = String.format("https://ws.audioscrobbler.com/2.0/?method=track." +
-                            "getsimilar" +
-                            "&artist=%s" +
-                            "&track=%s" +
-                            "&autocorrect=1" +
-                            "&api_key=%s" +
-                            "&format=json" +
-                            "&limit=%d",
-                    URLEncoder.encode(artist, StandardCharsets.UTF_8),
-                    URLEncoder.encode(track, StandardCharsets.UTF_8),
-                    apiKey, limit);
+            System.out.printf("[LastFmService] Имена до запроса → artist: '%s', track: '%s'%n", artist, track);
+            String url = String.format(
+                    "https://ws.audioscrobbler.com/2.0/?method=track.getsimilar&artist=%s&track=%s&autocorrect=1&api_key=%s&format=json&limit=%d",
+                    artist, track, apiKey, limit
+            );
 
             System.out.println("Запрос в Last.fm: " + url);
+
             JsonNode root = rest.getForObject(url, JsonNode.class);
+
+            System.out.println("== JSON ===\n" + root.toPrettyString());
+
             if (root.has("error")) {
                 System.out.println("Ошибка от Last.fm: " + root.path("message").asText());
                 return List.of();
             }
 
             JsonNode items = root.path("similartracks").path("track");
-            List<TrackSearchQuery> queries = new ArrayList<>();
-            items.forEach(i -> {
-                String name = i.path("name").asText();
-                String artistName = i.path("artist").path("name").asText();
-                if (!name.isEmpty() && !artistName.isEmpty())
-                    queries.add(new TrackSearchQuery(name, artistName));
-            });
-            return queries;
+            List<TrackSearchQuery> result = new ArrayList<>();
+
+            if (items.isArray()) {
+                for (JsonNode i : items) {
+                    String name = i.path("name").asText();
+                    String art = i.path("artist").path("name").asText();
+
+                    if (!name.isEmpty() && !art.isEmpty()) {
+                        result.add(new TrackSearchQuery(name, art));
+                        System.out.printf("  → Добавлен: '%s' / '%s'%n", name, art);
+                    }
+                }
+            } else {
+                System.out.println("Поле 'track' не является массивом");
+            }
+
+            return result;
+
         } catch (Exception e) {
             System.err.println("Ошибка запроса к Last.fm: " + e.getMessage());
             return List.of();
         }
-    }
-
-    private Optional<Track> searchSpotifyTrack(SpotifyApi api, String track, String artist) {
-        try {
-            String q = "track:" + track + " artist:" + artist;
-            System.out.println("Поиск в Spotify: " + q);
-            Track[] items = api.searchTracks(q).limit(1).build().execute().getItems();
-            return items.length > 0 ? Optional.of(items[0]) : Optional.empty();
-        } catch (Exception e) {
-            return Optional.empty();
-        }
-    }
-
-    private AudioFeatures getAudioFeatures(SpotifyApi api, String id) {
-        try {
-            return api.getAudioFeaturesForTrack(id).build().execute();
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    private Artist getArtist(SpotifyApi api, String id) {
-        try {
-            return api.getArtist(id).build().execute();
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    private boolean artistHasGenre(Artist a, String genre) {
-        return a != null && Arrays.stream(a.getGenres()).anyMatch(g -> g.equalsIgnoreCase(genre));
-    }
-
-    private boolean moodMatches(AudioFeatures f, String mood) {
-        if (f == null) return false;
-        return switch (mood.toLowerCase()) {
-            case "happy" -> f.getValence() > 0.6 && f.getEnergy() > 0.5;
-            case "sad" -> f.getValence() < 0.4 && f.getEnergy() < 0.5;
-            case "energetic" -> f.getEnergy() > 0.7;
-            case "calm" -> f.getEnergy() < 0.4 && f.getDanceability() < 0.5;
-            default -> true;
-        };
     }
 }
