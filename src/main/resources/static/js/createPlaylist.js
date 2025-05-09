@@ -1,35 +1,39 @@
-document.getElementById("createPlaylistForm").addEventListener("submit", function (e) {
+document.getElementById("createPlaylistForm").addEventListener("submit", async function (e) {
     e.preventDefault();
 
-    const body = {
-        name: document.getElementById("playlistName").value,
-        description: "Создан с фронта",
-        isPublic: true,
-        trackRequests: [
-            { trackName: "девочка с каре", artistName: "МУККА" },
-            { trackName: "клятвы", artistName: "Pyrokinesis" },
-            { trackName: "ПОЛВТОРОГО", artistName: "KEER" },
-            { trackName: "я приду к тебе с клубникой в декабре", artistName: "Pyrokinesis" },
-        ]
-            // Пока сделал заглушку, если хочешь, можешь фронт сделать
-    };
+    const name = document.getElementById("playlistName").value;
+    const genre = document.getElementById("genre").value;
+    const region = document.getElementById("region").value;
+    const mood = document.getElementById("mood").value;
 
-    fetch("/create", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(body)
-    })
-        .then(response => response.text())
-        .then(data => {
-            const resultDiv = document.getElementById("result");
-            resultDiv.innerText = data;
-            resultDiv.className = "success";
-        })
-        .catch(error => {
-            const resultDiv = document.getElementById("result");
-            resultDiv.innerText = "Ошибка: " + error;
-            resultDiv.className = "error";
+    const resultDiv = document.getElementById("result");
+    resultDiv.innerText = "Генерация...";
+    resultDiv.className = "";
+
+    try {
+        // Получаем рекомендации с параметрами
+        const query = new URLSearchParams({ genre, region, mood }).toString();
+        const recommendationsRes = await fetch(`/lastfm/lastfm?${query}`);
+        const trackRequests = await recommendationsRes.json();
+
+        const body = {
+            name,
+            description: `Плейлист для настроения: ${mood || "любой"}`,
+            isPublic: true,
+            trackRequests
+        };
+
+        const response = await fetch("/create", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body)
         });
+
+        const text = await response.text();
+        resultDiv.innerText = text;
+        resultDiv.className = response.ok ? "success" : "error";
+    } catch (err) {
+        resultDiv.innerText = "Ошибка: " + err;
+        resultDiv.className = "error";
+    }
 });

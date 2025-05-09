@@ -11,8 +11,11 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Service;
+import se.michaelthelin.spotify.SpotifyApi;
+import se.michaelthelin.spotify.model_objects.specification.Paging;
+import se.michaelthelin.spotify.model_objects.specification.Track;
 
-import java.util.Map;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -52,6 +55,54 @@ public class SpotifyService {
         session.setRefreshToken(refreshToken);
 
         System.out.println("Session: " + session);
+    }
+
+    /**
+     * Получает 5 случайных треков пользователя
+     *
+     * @return Список треков.
+     */
+    //
+    public List<Track> getRandomTracks() {
+        System.out.println("[SpotifyService] getRandomTracks() — старт");
+
+        String token = session.getAccessToken();
+        if (token == null || token.isBlank()) {
+            System.out.println("[SpotifyService] Access token отсутствует в сессии");
+            throw new RuntimeException("Access token is missing");
+        }
+
+        SpotifyApi spotifyApi = new SpotifyApi.Builder()
+                .setAccessToken(token)
+                .build();
+
+        try {
+            System.out.println("[SpotifyService] Отправка запроса к Spotify API на получение топ-треков");
+
+            Paging<Track> trackPaging = spotifyApi
+                    .getUsersTopTracks()
+                    .limit(50)
+                    .build()
+                    .execute();
+
+            List<Track> allTracks = new ArrayList<>(Arrays.asList(trackPaging.getItems()));
+            System.out.println("[SpotifyService] Получено треков: " + allTracks.size());
+
+            Collections.shuffle(allTracks);
+            List<Track> selected = allTracks.stream().limit(5).toList();
+
+            System.out.println("[SpotifyService] Выбраны 5 случайных треков:");
+            for (Track track : selected) {
+                String name = track.getName();
+                String artist = track.getArtists().length > 0 ? track.getArtists()[0].getName() : "Неизвестен";
+                System.out.println("  - " + name + " / " + artist);
+            }
+
+            return selected;
+        } catch (Exception e) {
+            System.out.println("[SpotifyService] Ошибка при получении топ-треков: " + e.getMessage());
+            throw new RuntimeException("Error fetching top tracks: " + e.getMessage());
+        }
     }
 
     /**
