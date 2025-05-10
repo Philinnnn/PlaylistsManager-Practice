@@ -6,6 +6,7 @@ import kz.kstu.kutsinas.batyrkhanov.practice.entities.AppUser;
 import kz.kstu.kutsinas.batyrkhanov.practice.repositories.AppUserRepo;
 import kz.kstu.kutsinas.batyrkhanov.practice.repositories.PlaylistsRepo;
 import kz.kstu.kutsinas.batyrkhanov.practice.utils.UserSession;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import se.michaelthelin.spotify.SpotifyApi;
@@ -26,6 +27,9 @@ public class PlaylistService {
     private final PlaylistsRepo playlistsRepo;
     private final UserSession session;
 
+    @Getter
+    private String lastPlaylistId;
+
     /**
      * Создает новый плейлист в Spotify и добавляет в него треки.
      *
@@ -37,6 +41,7 @@ public class PlaylistService {
         SpotifyApi spotifyApi = getSpotifyApi(user);
 
         String playlistId = createSpotifyPlaylist(spotifyApi, user, request);
+        this.lastPlaylistId = playlistId;
         List<String> trackUris = collectTrackUris(spotifyApi, request);
 
         if (!trackUris.isEmpty()) {
@@ -159,5 +164,7 @@ public class PlaylistService {
         );
         playlistsRepo.save(playlist);
     }
+
+
 }
 

@@ -18,7 +18,8 @@ public class PlaylistController {
     public ResponseEntity<String> createPlaylist(@RequestBody PlaylistRequest request) {
         try {
             playlistService.createPlaylist(request);
-            return ResponseEntity.ok("Playlist created!");
+            String playlistId = playlistService.getLastPlaylistId();
+            return ResponseEntity.ok(playlistId);
         } catch (Exception e) {
             System.err.println("Ошибка при создании плейлиста: " + e.getMessage());
             return ResponseEntity.internalServerError().body("Ошибка при создании плейлиста");

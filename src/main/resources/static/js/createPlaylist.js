@@ -32,9 +32,26 @@ document.getElementById("createPlaylistForm").addEventListener("submit", async f
             body: JSON.stringify(body)
         });
 
-        const text = await response.text();
-        resultDiv.innerText = text;
+        const playlistId = await response.text();
         resultDiv.className = response.ok ? "success" : "error";
+
+        if (response.ok) {
+            resultDiv.innerHTML = `
+        <p>Плейлист успешно создан!</p>
+        <iframe
+            title="Spotify Embed: Recommendation Playlist"
+            src="https://open.spotify.com/embed/playlist/${playlistId}?utm_source=generator&theme=0"
+            width="100%"
+            height="360"
+            frameBorder="0"
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            loading="lazy"
+        ></iframe>
+    `;
+        } else {
+            resultDiv.innerText = playlistId; // здесь текст ошибки
+        }
+
     } catch (err) {
         resultDiv.innerText = "Ошибка: " + err;
         resultDiv.className = "error";
