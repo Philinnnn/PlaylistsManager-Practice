@@ -1,5 +1,6 @@
 package kz.kstu.kutsinas.batyrkhanov.practice.services;
 
+import kz.kstu.kutsinas.batyrkhanov.practice.dto.TrackSearchQuery;
 import kz.kstu.kutsinas.batyrkhanov.practice.entities.AppUser;
 import kz.kstu.kutsinas.batyrkhanov.practice.entities.SpotifyUser;
 import kz.kstu.kutsinas.batyrkhanov.practice.enums.TokenType;
@@ -134,12 +135,65 @@ public class SpotifyService {
      */
     public Optional<Track> searchTrack(String trackName, String artistName) {
         try {
-            var query = "track:" + trackName + " artist:" + artistName;
+            String query = "track:" + trackName + " artist:" + artistName;
             System.out.println("[SpotifyService] Поиск в Spotify: " + query);
-            var spotifyApi = new SpotifyApi.Builder().setAccessToken(session.getAccessToken()).build();
-            var result = spotifyApi.searchTracks(query).limit(1).build().execute().getItems();
-            return result.length > 0 ? Optional.of(result[0]) : Optional.empty();
+
+            SpotifyApi spotifyApi = new SpotifyApi.Builder()
+                    .setAccessToken(session.getAccessToken())
+                    .build();
+
+            // Основной точный запрос
+            Track[] result = spotifyApi.searchTracks(query).limit(5).build().execute().getItems();
+
+            if (result.length > 0) {
+                // Проверка на близкое совпадение по названию
+                for (Track track : result) {
+                    if (track.getName().toLowerCase().contains(trackName.toLowerCase())) {
+                        System.out.println("✅ Найден (частичное совпадение): " + track.getName() + " — " + track.getArtists()[0].getName());
+                        return Optional.of(track);
+                    }
+                }
+
+                // Если нет точного совпадения, берём первый
+                System.out.println("⚠ Взяли первое приближённое совпадение: " + result[0].getName() + " — " + result[0].getArtists()[0].getName());
+                return Optional.of(result[0]);
+            }
+
+            System.out.println("❌ Ничего не найдено по: " + trackName + " — " + artistName);
+            return Optional.empty();
+
         } catch (Exception e) {
+            System.err.println("🚫 Ошибка при поиске трека в Spotify: " + e.getMessage());
+            return Optional.empty();
+        }
+    }
+
+    public Optional<TrackSearchQuery> getRandomTrackByArtist(String artistName) {
+        try {
+            var spotifyApi = new SpotifyApi.Builder()
+                    .setAccessToken(session.getAccessToken())
+                    .build();
+
+            // Найдём артиста
+            var artistSearch = spotifyApi.searchArtists(artistName).limit(1).build().execute().getItems();
+            if (artistSearch.length == 0) return Optional.empty();
+
+            var artist = artistSearch[0];
+
+            // Получим альбомы
+            var albums = spotifyApi.getArtistsAlbums(artist.getId()).limit(10).build().execute().getItems();
+            if (albums.length == 0) return Optional.empty();
+
+            var randomAlbum = albums[new Random().nextInt(albums.length)];
+
+            // Получим треки из альбома
+            var albumTracks = spotifyApi.getAlbumsTracks(randomAlbum.getId()).limit(10).build().execute().getItems();
+            if (albumTracks.length == 0) return Optional.empty();
+
+            var randomTrack = albumTracks[new Random().nextInt(albumTracks.length)];
+            return Optional.of(new TrackSearchQuery(randomTrack.getName(), artist.getName()));
+        } catch (Exception e) {
+            System.err.println("[SpotifyService] Ошибка при получении трека по артисту: " + artistName + " — " + e.getMessage());
             return Optional.empty();
         }
     }

@@ -103,8 +103,13 @@ public class PlaylistService {
     private List<String> collectTrackUris(SpotifyApi spotifyApi, PlaylistRequest request) {
         List<String> uris = new ArrayList<>();
         for (TrackSearchQuery query : request.getTrackRequests()) {
+            System.out.println("🎵 Отправляю в Spotify: " + query.getTrackName() + " — " + query.getArtistName());
             String uri = searchTrackUri(spotifyApi, query);
-            if (uri != null) uris.add(uri);
+            if (uri != null) {
+                uris.add(uri);
+            } else {
+                System.out.println("⚠ Не найден: " + query.getTrackName() + " — " + query.getArtistName());
+            }
         }
         return uris;
     }

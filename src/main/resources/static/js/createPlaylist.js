@@ -12,7 +12,7 @@ document.getElementById("createPlaylistForm").addEventListener("submit", async f
 
     try {
         const query = new URLSearchParams({ genre, region, mood }).toString();
-        const recommendationsRes = await fetch(`/lastfm/generate-recommendations?${query}`);
+        const recommendationsRes = await fetch(`/llama/generate-recommendations?${query}`);
         const trackRequests = await recommendationsRes.json();
 
         console.log("Запрос: " + query);
