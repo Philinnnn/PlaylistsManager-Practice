@@ -34,21 +34,22 @@ public class LlamaController {
     ) {
         try {
             List<String> artistNames = llamaService.getArtistNames(genre, region, mood);
-
-            List<TrackSearchQuery> result = new ArrayList<>();
+            List<TrackSearchQuery> trackPool = new ArrayList<>();
             Set<String> seen = new HashSet<>();
 
             for (String artist : artistNames) {
-                spotifyService.getRandomTrackByArtist(artist).ifPresent(track -> {
+                List<TrackSearchQuery> topTracks = spotifyService.getTopTracksByArtist(artist, region);
+                for (TrackSearchQuery track : topTracks) {
                     String key = track.getTrackName() + "|" + track.getArtistName();
                     if (seen.add(key)) {
-                        result.add(track);
+                        trackPool.add(track);
                     }
-                });
-                if (result.size() >= 50) break;
+                }
             }
 
-            return ResponseEntity.ok(result);
+            // Отбор 50 треков через LLaMA
+            List<TrackSearchQuery> finalList = llamaService.selectTopTracks(trackPool, genre, region, mood);
+            return ResponseEntity.ok(finalList);
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.internalServerError().build();

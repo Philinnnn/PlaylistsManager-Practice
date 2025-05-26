@@ -16,23 +16,25 @@ import java.util.*;
 @RequiredArgsConstructor
 public class LlamaService {
 
-    private final SpotifyService spotifyService;
     private final RestTemplate restTemplate = new RestTemplate();
 
-    @Value("${LLAMA_HOST:http://localhost:11434}")
+    @Value("${LLAMA_HOST}")
     private String llamaHost;
 
-    @Value("${LLAMA_MODEL:llama3}")
+    @Value("${LLAMA_MODEL}")
     private String llamaModel;
 
-    /**
-     * Формирует prompt в стиле "Составь список треков..." и парсит его в список треков.
-     */
-    public List<TrackSearchQuery> getTrackRecommendations(String genre, String region, String mood) {
-        String prompt = buildPrompt(genre, region, mood);
-        System.out.println("[LlamaService] Prompt: " + prompt);
+    public List<TrackSearchQuery> selectTopTracks(List<TrackSearchQuery> tracks, String genre, String region, String mood) {
+        StringBuilder sb = new StringBuilder("Из этого списка выбери 50 треков, которые лучше всего соответствуют жанру ");
+        sb.append(genre != null ? genre : "любой").append(", региону ")
+                .append(region != null ? region : "любой").append(", настроению ")
+                .append(mood != null ? mood : "любому").append(". Только список в формате: Артист, Название\n");
 
-        List<String> lines = queryLlama(prompt);
+        for (TrackSearchQuery track : tracks) {
+            sb.append(track.getArtistName()).append(", ").append(track.getTrackName()).append("\n");
+        }
+
+        List<String> lines = queryLlama(sb.toString());
         List<TrackSearchQuery> result = new ArrayList<>();
         Set<String> seen = new HashSet<>();
 
@@ -40,27 +42,13 @@ public class LlamaService {
             parseLine(line).ifPresent(q -> {
                 String key = q.getTrackName() + "|" + q.getArtistName();
                 if (seen.add(key)) {
-                    spotifyService.searchTrack(q.getTrackName(), q.getArtistName())
-                            .ifPresent(found -> result.add(new TrackSearchQuery(found.getName(), found.getArtists()[0].getName())));
+                    result.add(q);
                 }
             });
             if (result.size() >= 50) break;
         }
 
         return result;
-    }
-
-    /**
-     * Генерирует prompt для списка треков.
-     */
-    public String buildPrompt(String genre, String region, String mood) {
-        StringBuilder sb = new StringBuilder("Составь список из 20 ");
-        if (mood != null && !mood.isBlank()) sb.append(mood).append(" ");
-        if (genre != null && !genre.isBlank()) sb.append(genre).append(" ");
-        sb.append("треков");
-        if (region != null && !region.isBlank()) sb.append(" из региона ").append(region);
-        sb.append(". Формат строго такой: Артист, Название (никаких номеров, кавычек, пояснений, переносов строк в названии, ничего лишнего). Ответ только списком. Без текста до и после.");
-        return sb.toString();
     }
 
     /**
