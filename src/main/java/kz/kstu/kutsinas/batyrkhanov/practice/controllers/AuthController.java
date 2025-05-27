@@ -2,6 +2,7 @@ package kz.kstu.kutsinas.batyrkhanov.practice.controllers;
 
 import jakarta.servlet.http.HttpServletRequest;
 import kz.kstu.kutsinas.batyrkhanov.practice.services.AuthService;
+import kz.kstu.kutsinas.batyrkhanov.practice.utils.UserSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,7 @@ import java.util.Map;
 public class AuthController {
 
     private final AuthService authService;
+    private final UserSession userSession;
 
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody Map<String, String> request) {
@@ -36,6 +38,9 @@ public class AuthController {
     public ResponseEntity<String> login(@RequestBody Map<String, String> request, HttpServletRequest httpRequest) {
         try {
             authService.loginUser(request.get("username"), request.get("password"), httpRequest);
+
+            httpRequest.getSession().setAttribute("spotifyLinked", userSession.getAccessToken() != null);
+
             return ResponseEntity.ok("Login successful");
         } catch (BadCredentialsException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");

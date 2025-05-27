@@ -10,17 +10,22 @@
     <div class="card" style="text-align: center">
         <h1>Добро пожаловать, <span sec:authentication="name">пользователь</span>!</h1>
         <p>Чтобы создать плейлист — привяжите свой Spotify аккаунт:</p>
-        <a th:href="@{/oauth2/authorization/spotify}">
-            <button>🔗 Привязать Spotify</button>
-        </a>
 
-        <a th:href="@{/spotify/create-playlist-page}" class="button-link">
-            <button>🎵 Плейлист по настроению</button>
-        </a>
+        <div th:unless="${session.spotifyLinked}">
+            <a th:href="@{/oauth2/authorization/spotify}">
+                <button>🔗 Привязать Spotify</button>
+            </a>
+        </div>
 
-        <a th:href="@{/create-playlist-by-top-tracks}" class="button-link">
-            <button>🔥 Плейлист из топа</button>
-        </a>
+        <div th:if="${session.spotifyLinked}">
+            <a th:href="@{/spotify/create-playlist-page}" class="button-link">
+                <button>🎵 Плейлист по настроению</button>
+            </a>
+
+            <a th:href="@{/create-playlist-by-top-tracks}" class="button-link">
+                <button>🔥 Плейлист из топа</button>
+            </a>
+        </div>
 
         <form th:action="@{/auth/logout}" method="post" style="margin-top: 20px;">
             <button type="submit">🚪 Выйти</button>

@@ -3,11 +3,9 @@ document.getElementById("topTracksForm").addEventListener("submit", async functi
 
     const name = document.getElementById("playlistName").value;
 
-    // 1. Получаем рекомендации от LLaMA на основе топ-треков пользователя
     const res = await fetch("/llama/generate-by-top-tracks");
     const tracks = await res.json();
 
-    // 2. Отправляем запрос на создание плейлиста
     const body = {
     name,
     description: "Плейлист на основе ваших любимых треков",
@@ -21,7 +19,6 @@ document.getElementById("topTracksForm").addEventListener("submit", async functi
     body: JSON.stringify(body)
 });
 
-    // 3. Вывод результата
     const result = document.getElementById("result");
     if (response.ok) {
     const id = await response.text();

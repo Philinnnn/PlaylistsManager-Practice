@@ -1,6 +1,8 @@
 package kz.kstu.kutsinas.batyrkhanov.practice.controllers;
 
+import jakarta.servlet.http.HttpServletRequest;
 import kz.kstu.kutsinas.batyrkhanov.practice.services.SpotifyService;
+import kz.kstu.kutsinas.batyrkhanov.practice.utils.UserSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,11 +19,14 @@ import java.nio.charset.StandardCharsets;
 public class SpotifyController {
 
     private final SpotifyService spotifyService;
+    private final UserSession userSession;
 
     @GetMapping("/callback")
-    public RedirectView handleSpotifyCallback(OAuth2AuthenticationToken authentication) {
+    public RedirectView handleSpotifyCallback(OAuth2AuthenticationToken authentication,
+                                              HttpServletRequest request) {
         try {
             spotifyService.handleSpotifyCallback(authentication);
+            request.getSession().setAttribute("spotifyLinked", true);
             return new RedirectView("/dashboard");
         } catch (RuntimeException e) {
             return new RedirectView("/error?message=" + URLEncoder.encode(e.getMessage(), StandardCharsets.UTF_8));
