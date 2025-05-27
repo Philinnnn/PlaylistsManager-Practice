@@ -38,8 +38,8 @@ public class LlamaController {
             Set<String> seen = new HashSet<>();
 
             for (String artist : artistNames) {
-                List<TrackSearchQuery> topTracks = spotifyService.getTopTracksByArtist(artist, region);
-                for (TrackSearchQuery track : topTracks) {
+                List<TrackSearchQuery> topTracksByArtist = spotifyService.getTopTracksByArtist(artist, region);
+                for (TrackSearchQuery track : topTracksByArtist) {
                     String key = track.getTrackName() + "|" + track.getArtistName();
                     if (seen.add(key)) {
                         trackPool.add(track);
@@ -47,9 +47,41 @@ public class LlamaController {
                 }
             }
 
-            // Отбор 50 треков через LLaMA
-            List<TrackSearchQuery> finalList = llamaService.selectTopTracks(trackPool, genre, region, mood);
+            List<TrackSearchQuery> finalList = llamaService.selectBestTracks(trackPool, genre, region, mood);
             return ResponseEntity.ok(finalList);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping("/generate-by-top-tracks")
+    public ResponseEntity<List<TrackSearchQuery>> generateFromTopTracks() {
+        try {
+            List<TrackSearchQuery> topTracks = spotifyService.getUserTopTracks();
+
+            Set<String> uniqueArtists = new HashSet<>();
+            for (TrackSearchQuery track : topTracks) {
+                if (uniqueArtists.size() >= 20) break;
+                uniqueArtists.add(track.getArtistName());
+            }
+
+            List<TrackSearchQuery> trackPool = new ArrayList<>();
+            Set<String> seen = new HashSet<>();
+            for (String artist : uniqueArtists) {
+                List<TrackSearchQuery> artistTracks = spotifyService.getTopTracksByArtist(artist, null);
+                for (TrackSearchQuery track : artistTracks) {
+                    String key = track.getTrackName() + "|" + track.getArtistName();
+                    if (seen.add(key)) {
+                        trackPool.add(track);
+                    }
+                }
+            }
+
+            List<TrackSearchQuery> finalList = llamaService.selectBestTracks(topTracks, trackPool);
+            return ResponseEntity.ok(finalList);
+
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.internalServerError().build();

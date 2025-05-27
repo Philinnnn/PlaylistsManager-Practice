@@ -95,3 +95,25 @@ button:hover {
 .button-link:first-child {
     margin-top: 0;
 }
+
+.autocomplete-list {
+    position: absolute;
+    z-index: 1000;
+    background: #1e1e1e;
+    border: 1px solid #444;
+    width: calc(100% - 40px);
+    max-height: 200px;
+    overflow-y: auto;
+    list-style: none;
+    padding: 0;
+    margin: 5px 0 0 0;
+}
+
+.autocomplete-list li {
+    padding: 10px;
+    cursor: pointer;
+}
+
+.autocomplete-list li:hover {
+    background-color: #333;
+}

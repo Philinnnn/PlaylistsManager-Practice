@@ -15,15 +15,16 @@
         </a>
 
         <a th:href="@{/spotify/create-playlist-page}" class="button-link">
-            <button>🎵 Создать плейлист</button>
+            <button>🎵 Плейлист по настроению</button>
+        </a>
+
+        <a th:href="@{/create-playlist-by-top-tracks}" class="button-link">
+            <button>🔥 Плейлист из топа</button>
         </a>
 
         <form th:action="@{/auth/logout}" method="post" style="margin-top: 20px;">
             <button type="submit">🚪 Выйти</button>
         </form>
-
-
-
     </div>
 </div>
 <script th:src="@{/js/dashboard.js}"></script>

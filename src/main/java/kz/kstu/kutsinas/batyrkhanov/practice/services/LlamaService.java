@@ -24,35 +24,52 @@ public class LlamaService {
     @Value("${LLAMA_MODEL}")
     private String llamaModel;
 
-    public List<TrackSearchQuery> selectTopTracks(List<TrackSearchQuery> tracks, String genre, String region, String mood) {
-        StringBuilder sb = new StringBuilder("Из этого списка выбери 50 треков, которые лучше всего соответствуют жанру ");
-        sb.append(genre != null ? genre : "любой").append(", региону ")
-                .append(region != null ? region : "любой").append(", настроению ")
-                .append(mood != null ? mood : "любому").append(". Только список в формате: Артист, Название\n");
-
-        for (TrackSearchQuery track : tracks) {
-            sb.append(track.getArtistName()).append(", ").append(track.getTrackName()).append("\n");
+    /**
+     * Отбор 50 лучших треков на основе предпочтений (seed-треки + кандидат-треки).
+     */
+    public List<TrackSearchQuery> selectBestTracks(List<TrackSearchQuery> seeds, List<TrackSearchQuery> candidates) {
+        StringBuilder prompt = new StringBuilder("Вот список треков, которые вы любите:\n");
+        for (TrackSearchQuery seed : seeds) {
+            prompt.append(seed.getArtistName()).append(" — ").append(seed.getTrackName()).append("\n");
         }
 
-        List<String> lines = queryLlama(sb.toString());
-        List<TrackSearchQuery> result = new ArrayList<>();
-        Set<String> seen = new HashSet<>();
-
-        for (String line : lines) {
-            parseLine(line).ifPresent(q -> {
-                String key = q.getTrackName() + "|" + q.getArtistName();
-                if (seen.add(key)) {
-                    result.add(q);
-                }
-            });
-            if (result.size() >= 50) break;
+        prompt.append("\nВот большой список других песен:\n");
+        for (TrackSearchQuery candidate : candidates) {
+            prompt.append(candidate.getArtistName()).append(", ").append(candidate.getTrackName()).append("\n");
         }
 
-        return result;
+        prompt.append("\nВыбери 50 лучших треков, максимально похожих на первые. Формат: Артист, Название. Только список.");
+
+        return parseResponseToTrackList(queryLlama(prompt.toString()), 50);
     }
 
     /**
-     * Генерирует prompt для получения имён артистов.
+     * Отбор 50 лучших треков на основе жанра, региона и настроения.
+     */
+    public List<TrackSearchQuery> selectBestTracks(List<TrackSearchQuery> tracks, String genre, String region, String mood) {
+        StringBuilder prompt = new StringBuilder("Из этого списка выбери 50 треков");
+
+        if (genre != null && !genre.isBlank()) {
+            prompt.append(", которые лучше всего соответствуют жанру ").append(genre);
+        }
+        if (region != null && !region.isBlank()) {
+            prompt.append(", региону ").append(region);
+        }
+        if (mood != null && !mood.isBlank()) {
+            prompt.append(", настроению ").append(mood);
+        }
+
+        prompt.append(". Только список в формате: Артист, Название.\n\n");
+
+        for (TrackSearchQuery track : tracks) {
+            prompt.append(track.getArtistName()).append(", ").append(track.getTrackName()).append("\n");
+        }
+
+        return parseResponseToTrackList(queryLlama(prompt.toString()), 50);
+    }
+
+    /**
+     * Генерация артистов по жанру, региону, настроению.
      */
     public List<String> getArtistNames(String genre, String region, String mood) {
         String prompt = String.format(
@@ -62,28 +79,15 @@ public class LlamaService {
                 region != null ? "из региона " + region : ""
         ).trim();
 
-        System.out.println("[LlamaService] Prompt: " + prompt);
-
-        List<String> lines = queryLlama(prompt);
-        List<String> artists = new ArrayList<>();
-
-        for (String line : lines) {
-            String cleaned = line.replaceFirst("^\\d+[.)]?\\s*", "").trim();
-            if (!cleaned.isBlank() && cleaned.length() < 80) {
-                artists.add(cleaned);
-            }
-        }
-
-        System.out.println("[LlamaService] Сгенерированные артисты: " + artists);
-        return artists;
+        System.out.println("[LlamaService] Prompt (by tags): " + prompt);
+        return parseResponseToArtistList(queryLlama(prompt));
     }
 
     /**
-     * Делает запрос к локальному API LLaMA и возвращает список строк.
+     * Запрос к локальному API LLaMA.
      */
     private List<String> queryLlama(String prompt) {
         String url = llamaHost + "/api/generate";
-
         Map<String, Object> body = Map.of(
                 "model", llamaModel,
                 "prompt", prompt,
@@ -92,7 +96,6 @@ public class LlamaService {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
 
         try {
@@ -107,7 +110,7 @@ public class LlamaService {
     }
 
     /**
-     * Парсит строку формата "Артист, Название" (с удалением номера, дефиса и т.п.).
+     * Парсинг строки "Артист, Название".
      */
     private Optional<TrackSearchQuery> parseLine(String line) {
         String cleaned = line.trim().replaceFirst("^\\d+[.)]?\\s*", "");
@@ -131,5 +134,39 @@ public class LlamaService {
         }
 
         return Optional.of(new TrackSearchQuery(track, artist));
+    }
+
+    /**
+     * Парсинг ответов LLaMA в список треков.
+     */
+    private List<TrackSearchQuery> parseResponseToTrackList(List<String> lines, int limit) {
+        List<TrackSearchQuery> result = new ArrayList<>();
+        Set<String> seen = new HashSet<>();
+
+        for (String line : lines) {
+            parseLine(line).ifPresent(q -> {
+                String key = q.getTrackName() + "|" + q.getArtistName();
+                if (seen.add(key)) {
+                    result.add(q);
+                }
+            });
+            if (result.size() >= limit) break;
+        }
+
+        return result;
+    }
+
+    /**
+     * Парсинг артистов из LLaMA-ответа.
+     */
+    private List<String> parseResponseToArtistList(List<String> lines) {
+        List<String> result = new ArrayList<>();
+        for (String line : lines) {
+            String cleaned = line.replaceFirst("^\\d+[.)]?\\s*", "").trim();
+            if (!cleaned.isBlank() && cleaned.length() < 80) {
+                result.add(cleaned);
+            }
+        }
+        return result;
     }
 }

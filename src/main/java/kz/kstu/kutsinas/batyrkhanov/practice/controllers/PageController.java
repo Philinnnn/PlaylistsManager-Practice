@@ -35,5 +35,10 @@ public class PageController {
     public String createPlaylistPage() {
         return "createPlaylist";
     }
+
+    @GetMapping("/create-playlist-by-top-tracks")
+    public String createPlaylistByTopTracks() {
+        return "createPlaylistByTopTracks";
+    }
 }
 

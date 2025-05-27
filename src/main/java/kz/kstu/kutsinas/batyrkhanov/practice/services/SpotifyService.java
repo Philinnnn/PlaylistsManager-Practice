@@ -9,16 +9,19 @@ import kz.kstu.kutsinas.batyrkhanov.practice.repositories.AppUserRepo;
 import kz.kstu.kutsinas.batyrkhanov.practice.repositories.SpotifyUsersRepo;
 import kz.kstu.kutsinas.batyrkhanov.practice.utils.UserSession;
 import lombok.RequiredArgsConstructor;
+import org.apache.hc.core5.http.ParseException;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Service;
 import se.michaelthelin.spotify.SpotifyApi;
+import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
+import se.michaelthelin.spotify.model_objects.specification.Paging;
 import se.michaelthelin.spotify.model_objects.specification.Track;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.io.IOException;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -82,6 +85,9 @@ public class SpotifyService {
 
     public List<TrackSearchQuery> getTopTracksByArtist(String artistName, String region) {
         List<TrackSearchQuery> tracks = new ArrayList<>();
+        if(region == null || region.isEmpty()) {
+            region = "US";
+        }
         CountryCode code = CountryCode.getByAlpha2Code(region.toUpperCase());
         try {
             var spotifyApi = new SpotifyApi.Builder()
@@ -104,6 +110,38 @@ public class SpotifyService {
         } catch (Exception e) {
             System.err.println("Ошибка при получении топ-треков артиста: " + artistName + " — " + e.getMessage());
             return tracks;
+        }
+    }
+
+    public List<TrackSearchQuery> getUserTopTracks() {
+        SpotifyApi api = new SpotifyApi.Builder()
+                .setAccessToken(session.getAccessToken())
+                .build();
+
+        try {
+            Paging<Track> trackPaging = api.getUsersTopTracks()
+                    .limit(50)
+                    .build()
+                    .execute();
+
+            if (trackPaging == null || trackPaging.getItems() == null) {
+                return Collections.emptyList();
+            }
+
+            return Arrays.stream(trackPaging.getItems())
+                    .filter(Objects::nonNull)
+                    .map(track -> {
+                        String trackName = track.getName();
+                        String artistName = (track.getArtists() != null && track.getArtists().length > 0)
+                                ? track.getArtists()[0].getName()
+                                : "Unknown Artist";
+                        return new TrackSearchQuery(trackName, artistName);
+                    })
+                    .collect(Collectors.toList());
+
+        } catch (IOException | SpotifyWebApiException | ParseException e) {
+            System.err.println("Ошибка при получении топ-треков пользователя: " + e.getMessage());
+            return Collections.emptyList();
         }
     }
 }

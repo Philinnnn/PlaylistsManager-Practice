@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Плейлист из топ-треков</title>
+  <link rel="stylesheet" href="/css/form-style.css" />
+</head>
+<body>
+<div class="wrapper">
+  <div class="card">
+    <h1>Создать плейлист из топ-треков</h1>
+    <form id="topTracksForm">
+      <label for="playlistName">Название плейлиста:</label>
+      <input type="text" id="playlistName" required />
+      <button type="submit">Создать</button>
+    </form>
+    <div id="result"></div>
+  </div>
+</div>
+<script src="/js/createPlaylistByTopTracks.js"></script>
+</body>
+</html>
