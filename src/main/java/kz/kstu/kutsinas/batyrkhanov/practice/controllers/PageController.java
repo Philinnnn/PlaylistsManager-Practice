@@ -40,5 +40,10 @@ public class PageController {
     public String createPlaylistByTopTracks() {
         return "createPlaylistByTopTracks";
     }
+
+    @GetMapping("/sound-pick")
+    public String soundPick() {
+        return "soundPick";
+    }
 }
 

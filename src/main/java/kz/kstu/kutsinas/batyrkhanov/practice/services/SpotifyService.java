@@ -144,4 +144,21 @@ public class SpotifyService {
             return Collections.emptyList();
         }
     }
+
+    public String getTrackId(String artistName, String trackName) {
+        try {
+            SpotifyApi api = new SpotifyApi.Builder()
+                    .setAccessToken(session.getAccessToken())
+                    .build();
+
+            var result = api.searchTracks(trackName + " artist:" + artistName).limit(1).build().execute();
+
+            if (result.getItems().length > 0) {
+                return result.getItems()[0].getId();
+            }
+        } catch (Exception e) {
+            System.err.println("Ошибка получения ID трека: " + e.getMessage());
+        }
+        return null;
+    }
 }

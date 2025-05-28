@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>SoundPick</title>
+    <link rel="stylesheet" href="/css/form-style.css">
+    <style>
+        .loader {
+            border: 4px solid #333;
+            border-top: 4px solid #1db954;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .player-controls {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <div class="card">
+        <h1>SoundPick</h1>
+
+        <div id="track-container">
+            <div class="loader" id="loader"></div>
+
+            <div id="track-info" style="display: none;">
+                <label>Артист</label>
+                <div id="artist">Загрузка...</div>
+                <label>Трек</label>
+                <div id="track">Загрузка...</div>
+
+                <div class="player-controls">
+                    <div id="spotifyPlayer" style="width:100%;"></div>
+                </div>
+            </div>
+
+            <form id="voteForm" style="display: none;">
+                <input type="hidden" id="trackName">
+                <input type="hidden" id="artistName">
+
+                <div style="display: flex; justify-content: space-between;">
+                    <button type="button" id="dislikeBtn">👎 Пропустить</button>
+                    <button type="button" id="likeBtn">❤️ Добавить</button>
+                </div>
+            </form>
+
+            <div id="result"></div>
+        </div>
+
+        <!-- Кнопка стоп внизу по центру -->
+        <div style="margin-top: 30px; text-align: center;">
+            <button id="stopBtn">⏹ Завершить</button>
+        </div>
+    </div>
+</div>
+
+<script src="/js/soundPick.js"></script>
+</body>
+</html>
