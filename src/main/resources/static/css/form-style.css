@@ -117,3 +117,19 @@ button:hover {
 .autocomplete-list li:hover {
     background-color: #333;
 }
+
+.playlist-link button {
+    background-color: #1db954;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.playlist-link button:hover {
+    background-color: #1ed760;
+}

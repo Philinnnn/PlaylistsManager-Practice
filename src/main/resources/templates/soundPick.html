@@ -23,6 +23,15 @@
         .player-controls {
             margin-top: 10px;
         }
+
+        .centered-footer {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .hidden {
+            display: none !important;
+        }
     </style>
 </head>
 <body>
@@ -54,12 +63,13 @@
                 </div>
             </form>
 
-            <div id="result"></div>
-        </div>
+            <div class="centered-footer hidden" id="footerControls">
+                <input type="text" id="playlistName" placeholder="Название плейлиста"
+                       style="width: 100%; margin-bottom: 12px; padding: 10px; border-radius: 6px; border: 1px solid #333; background-color: #282828; color: white;" />
+                <button id="stopBtn">⏹ Завершить</button>
+            </div>
 
-        <!-- Кнопка стоп внизу по центру -->
-        <div style="margin-top: 30px; text-align: center;">
-            <button id="stopBtn">⏹ Завершить</button>
+            <div id="result"></div>
         </div>
     </div>
 </div>

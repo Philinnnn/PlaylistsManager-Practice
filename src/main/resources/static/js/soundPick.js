@@ -21,6 +21,7 @@ function toggleLoading(isLoading) {
     document.getElementById("loader").style.display = isLoading ? "block" : "none";
     document.getElementById("track-info").style.display = isLoading ? "none" : "block";
     document.getElementById("voteForm").style.display = isLoading ? "none" : "flex";
+    document.getElementById("footerControls").classList.toggle("hidden", isLoading);
 }
 
 function showNextTrack() {
@@ -66,17 +67,20 @@ async function sendVote(vote) {
 }
 
 async function finishVoting() {
-    document.getElementById("track-container").innerHTML = `
+    const container = document.getElementById("track-container");
+    const playlistName = document.getElementById("playlistName").value.trim() || "SoundPick Playlist";
+
+    container.innerHTML = `
         <h2>Голосование завершено</h2>
         <p>Вы выбрали ${likedTracks.length} трек(ов).</p>
     `;
 
     if (likedTracks.length > 0) {
         const request = {
-            name: "SoundPick Playlist",
+            name: playlistName,
             description: "Плейлист из понравившихся треков через SoundPick",
             isPublic: false,
-            trackRequests: likedTracks // ← ключевое исправление
+            trackRequests: likedTracks
         };
 
         const response = await fetch("/create", {
@@ -88,11 +92,22 @@ async function finishVoting() {
         if (response.ok) {
             const playlistId = await response.text();
             const url = `https://open.spotify.com/playlist/${playlistId}`;
-            document.getElementById("track-container").innerHTML += `<p>✅ <a href="${url}" target="_blank">Плейлист создан</a></p>`;
+            container.innerHTML += `
+            <div style="margin-top: 20px; text-align: center;">
+                <a href="${url}" target="_blank" class="playlist-link">
+                    <button>🎵 Открыть плейлист</button>
+                </a>
+            </div>`;
         } else {
-            document.getElementById("track-container").innerHTML += `<p style="color:red;">⚠ Не удалось создать плейлист</p>`;
+            container.innerHTML += `<p style="color:red;">⚠ Не удалось создать плейлист</p>`;
         }
     }
+
+    container.innerHTML += `
+        <div style="margin-top: 20px; text-align: center;">
+            <a href="/dashboard" class="button-link"><button>🏠 На главную</button></a>
+        </div>
+    `;
 }
 
 document.addEventListener("DOMContentLoaded", () => {
