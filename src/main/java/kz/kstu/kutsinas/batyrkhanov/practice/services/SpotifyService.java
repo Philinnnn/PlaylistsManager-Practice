@@ -32,10 +32,10 @@ public class SpotifyService {
     private final SpotifyUsersRepo usersRepo;
     private final UserSession session;
 
-    /**
-     * Устанавливает связь между пользователем приложения и его аккаунтом Spotify.
+   /**
+     * Establishes a connection between the user of the application and his Spotify account.
      *
-     * @param authentication OAuth2AuthenticationToken, полученный от Spring Security после успешной аутентификации.
+     * @param authentication OAuth2AuthenticationToken, Received from Spring Security after successful authentication.
      */
     public void handleSpotifyCallback(OAuth2AuthenticationToken authentication) {
         String appUsername = session.getUsername();
@@ -64,11 +64,11 @@ public class SpotifyService {
     }
 
     /**
-     * Получает токен доступа или обновления для указанного типа.
+     * Receives an access or update token for the specified type.
      *
-     * @param auth OAuth2AuthenticationToken, полученный от Spring Security после успешной аутентификации.
-     * @param type Тип токена (ACCESS или REFRESH).
-     * @return Значение токена.
+     * @param auth OAuth2AuthenticationToken, received from Spring Security after successful authentication.
+     * @param type Token type (ACCESS or REFRESH).
+     * @return The value of token.
      */
     private String getToken(OAuth2AuthenticationToken auth, TokenType type) {
         OAuth2AuthorizedClient client = authorizedClientService.loadAuthorizedClient(

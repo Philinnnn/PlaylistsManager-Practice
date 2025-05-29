@@ -23,8 +23,8 @@ public class LlamaController {
     private final SpotifyService spotifyService;
     private final LlamaService llamaService;
 
-    /**
-     * Генерирует список рекомендаций от LLaMA, используя жанр, настроение и регион.
+   /**
+     * Generates a list of recommendations from Llama using the genre, mood and region.
      */
     @GetMapping("/generate-recommendations")
     public ResponseEntity<List<TrackSearchQuery>> generateFromArtistList(

@@ -31,10 +31,10 @@ public class PlaylistService {
     private String lastPlaylistId;
 
     /**
-     * Создает новый плейлист в Spotify и добавляет в него треки.
+     * Creates a new playlist in Spotify and adds tracks to it.
      *
-     * @param request запрос на создание плейлиста.
-     * @throws Exception если произошла ошибка при создании плейлиста или добавлении треков.
+     * @param request request for the creation of a playlist.
+     * @throws Exception If an error occurred when creating a playlist or adding tracks.
      */
     public void createPlaylist(PlaylistRequest request) throws Exception {
         AppUser user = getCurrentUser();
@@ -53,10 +53,10 @@ public class PlaylistService {
 
     // === PRIVATE METHODS ===
 
-    /**
-     * Получает текущего пользователя из сессии.
+   /**
+     * Receives the current user from the session.
      *
-     * @return AppUser текущий пользователь.
+     * @return AppUser current user.
      */
     private AppUser getCurrentUser() {
         return appUserRepo.findByUsername(session.getUsername())
@@ -64,10 +64,10 @@ public class PlaylistService {
     }
 
     /**
-     * Создает экземпляр SpotifyApi с токеном доступа пользователя.
+     * Creates SpotifyApi copy with user access tokens.
      *
-     * @param user AppUser текущий пользователь.
-     * @return SpotifyApi экземпляр API.
+     * @param user AppUser current user.
+     * @return SpotifyApi API copy.
      */
     private SpotifyApi getSpotifyApi(AppUser user) {
         return new SpotifyApi.Builder()
@@ -76,12 +76,12 @@ public class PlaylistService {
     }
 
     /**
-     * Создает новый плейлист в Spotify.
+     * Creates a new playlist in Spotify.
      *
-     * @param spotifyApi SpotifyApi экземпляр API.
-     * @param user AppUser текущий пользователь.
-     * @param request PlaylistRequest запрос на создание плейлиста.
-     * @return ID созданного плейлиста.
+     * @param spotifyApi spotifyApi API copy.
+     * @param user AppUser current user.
+     * @param request PlaylistRequest request for the creation of a playlist.
+     * @return ID of the created playlist.
      */
     private String createSpotifyPlaylist(SpotifyApi spotifyApi, AppUser user, PlaylistRequest request) throws Exception {
         CreatePlaylistRequest createRequest = spotifyApi
@@ -93,12 +93,12 @@ public class PlaylistService {
         return createRequest.execute().getId();
     }
 
-    /**
-     * Собирает URI треков из запросов на создание плейлиста.
+   /**
+     * Collects URI tracks from requests to create a playlist.
      *
-     * @param spotifyApi SpotifyApi экземпляр API.
-     * @param request PlaylistRequest запрос на создание плейлиста.
-     * @return Список URI треков.
+     * @param spotifyApi SpotifyApi API copy.
+     * @param request PlaylistRequest A request to create a playlist.
+     * @return List of URI tracks.
      */
     private List<String> collectTrackUris(SpotifyApi spotifyApi, PlaylistRequest request) {
         List<String> uris = new ArrayList<>();
@@ -115,11 +115,11 @@ public class PlaylistService {
     }
 
     /**
-     * Ищет URI трека по имени и имени исполнителя.
+     * Searches for the URI track named and the name of the performer.
      *
-     * @param spotifyApi SpotifyApi экземпляр API.
-     * @param query TrackSearchQuery запрос на поиск трека.
-     * @return URI найденного трека или null, если не найден.
+     * @param spotifyApi SpotifyApi API copy.
+     * @param query TrackSearchQuery Request for the search for the track.
+     * @return URI Found track or null, if not found.
      */
     private String searchTrackUri(SpotifyApi spotifyApi, TrackSearchQuery query) {
         try {
@@ -139,11 +139,11 @@ public class PlaylistService {
     }
 
     /**
-     * Добавляет треки в плейлист.
+     * Adds tracks to the playlist.
      *
-     * @param spotifyApi SpotifyApi экземпляр API.
-     * @param playlistId ID плейлиста.
-     * @param uris Список URI треков.
+     * @param spotifyApi SpotifyApi API copy.
+     * @param playlistId ID playlist.
+     * @param uris List of URI tracks.
      */
     private void addTracksToPlaylist(SpotifyApi spotifyApi, String playlistId, List<String> uris) throws Exception {
         AddItemsToPlaylistRequest addRequest = spotifyApi
@@ -153,11 +153,11 @@ public class PlaylistService {
     }
 
     /**
-     * Сохраняет метаданные плейлиста в базе данных.
+     * Saves metadata playlist in the database.
      *
-     * @param user AppUser текущий пользователь.
-     * @param playlistId ID плейлиста.
-     * @param request PlaylistRequest запрос на создание плейлиста.
+     * @param user AppUser current user.
+     * @param playlistId  playlist ID.
+     * @param request PlaylistRequest A request to create a playlist.
      */
     private void savePlaylistMetadata(AppUser user, String playlistId, PlaylistRequest request) {
         Playlist playlist = new Playlist(

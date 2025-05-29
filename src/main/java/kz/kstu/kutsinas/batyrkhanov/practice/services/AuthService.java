@@ -24,11 +24,11 @@ public class AuthService {
     private final AuthenticationManager authManager;
     private final UserSession session;
 
-    /**
-     * Регистрация нового пользователя.
+   /**
+     * Registration of a new user.
      *
-     * @param username     имя пользователя
-     * @param rawPassword  пароль
+     * @param username user name
+     * @param rawPassword password
      */
     public void registerUser(String username, String rawPassword) {
         if (username == null || rawPassword == null) {
@@ -45,12 +45,12 @@ public class AuthService {
         appUserRepo.save(user);
     }
 
-    /**
-     * Аутентификация пользователя.
+   /**
+     * Authentication of the user.
      *
-     * @param username имя пользователя
-     * @param password пароль
-     * @param request  HTTP-запрос
+     * @param username user name
+     * @param password password
+     * @param request http request
      */
     public void loginUser(String username, String password, HttpServletRequest request) {
         Authentication auth = authManager.authenticate(
@@ -71,10 +71,10 @@ public class AuthService {
         loadUserSession(user);
     }
 
-    /**
-     * Обновляет токен доступа Spotify для пользователя.
+   /**
+     * Updates Spotify access tokens for the user.
      *
-     * @param user объект пользователя
+     * @param user User object
      */
     private void refreshSpotifyAccessToken(AppUser user) {
         var spotifyUser = user.getSpotifyUser();
@@ -101,9 +101,9 @@ public class AuthService {
     }
 
     /**
-     * Выход из системы.
+     * Exit from the system.
      *
-     * @param request HTTP-запрос
+     * @param request http request
      */
     public void logout(HttpServletRequest request) {
         request.getSession().invalidate();
@@ -111,9 +111,9 @@ public class AuthService {
     }
 
     /**
-     * Загружает данные пользователя в сессию.
+     * Downloads user data into the session.
      *
-     * @param user объект пользователя
+     * @param user User object
      */
     private void loadUserSession(AppUser user) {
         session.setUsername(user.getUsername());

@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 /**
- * Представляет пользователя приложения, сохраняемого в БД.
+ * Represents the user of the application preserved in the database.
  */
 @Entity
 @Table(name = "app_users")

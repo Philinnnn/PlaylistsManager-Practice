@@ -19,10 +19,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 /**
- * Конфигурация Spring Security:
- * - Разрешает доступ к корневому маршруту и странице входа без авторизации
- * - Все остальные запросы требуют аутентификации
- * - Используется OAuth2-вход с кастомной страницей /login
+ * Configuration Spring Security:
+ * - allows access to the root route and entrance page without authorization
+ * - All other requests require authentication
+ * - Used OAUTH2 input with a custom page /login
  */
 @Configuration
 @EnableWebSecurity

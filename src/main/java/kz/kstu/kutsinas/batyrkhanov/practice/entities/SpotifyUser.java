@@ -6,7 +6,7 @@ import lombok.*;
 import java.util.Map;
 
 /**
- * Представляет пользователя Spotify, сохраняемого в БД.
+ * Represents the user Spotify, preserved in the database.
  */
 @Entity
 @Table(name = "spotify_users")

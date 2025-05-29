@@ -24,8 +24,8 @@ public class LlamaService {
     @Value("${LLAMA_MODEL}")
     private String llamaModel;
 
-    /**
-     * Отбор 50 лучших треков на основе предпочтений (seed-треки + кандидат-треки).
+  /**
+     * Selection of the 50 best tracks based on preferences (SEED tracies + candidate trees).
      */
     public List<TrackSearchQuery> selectBestTracks(List<TrackSearchQuery> seeds, List<TrackSearchQuery> candidates) {
         StringBuilder prompt = new StringBuilder("Вот список треков, которые вы любите:\n");
@@ -43,8 +43,8 @@ public class LlamaService {
         return parseResponseToTrackList(queryLlama(prompt.toString()), 50);
     }
 
-    /**
-     * Отбор 50 лучших треков на основе жанра, региона и настроения.
+   /**
+     * Selection of the 50 best tracks based on the genre, region and mood.
      */
     public List<TrackSearchQuery> selectBestTracks(List<TrackSearchQuery> tracks, String genre, String region, String mood) {
         StringBuilder prompt = new StringBuilder("Из этого списка выбери 50 треков");
@@ -69,7 +69,7 @@ public class LlamaService {
     }
 
     /**
-     * Генерация артистов по жанру, региону, настроению.
+     * Generation of artists by genre, region, mood.
      */
     public List<String> getArtistNames(String genre, String region, String mood) {
         String prompt = String.format(
@@ -84,7 +84,7 @@ public class LlamaService {
     }
 
     /**
-     * Запрос к локальному API LLaMA.
+     * Request to the local API LLAMA.
      */
     private List<String> queryLlama(String prompt) {
         String url = llamaHost + "/api/generate";
@@ -110,7 +110,7 @@ public class LlamaService {
     }
 
     /**
-     * Парсинг строки "Артист, Название".
+     * Parsing line "Artist, name".
      */
     private Optional<TrackSearchQuery> parseLine(String line) {
         String cleaned = line.trim().replaceFirst("^\\d+[.)]?\\s*", "");
@@ -137,7 +137,7 @@ public class LlamaService {
     }
 
     /**
-     * Парсинг ответов LLaMA в список треков.
+     * Llama Parsing in the list of tracks.
      */
     private List<TrackSearchQuery> parseResponseToTrackList(List<String> lines, int limit) {
         List<TrackSearchQuery> result = new ArrayList<>();
@@ -156,8 +156,8 @@ public class LlamaService {
         return result;
     }
 
-    /**
-     * Парсинг артистов из LLaMA-ответа.
+   /**
+     * Parsing of artists from Llama-answer.
      */
     private List<String> parseResponseToArtistList(List<String> lines) {
         List<String> result = new ArrayList<>();

@@ -18,7 +18,7 @@ public class SoundPickController {
     private final LlamaService llamaService;
 
     /**
-     * Обработка голосования.
+     * Voting processing.
      */
     @PostMapping("/vote")
     @ResponseBody
@@ -32,7 +32,7 @@ public class SoundPickController {
     }
 
     /**
-     * SoundPick: получить рекомендации с превью.
+     * SoundPick: Get recommendations with a preview.
      */
     @GetMapping("/tracks")
     public ResponseEntity<List<Map<String, Object>>> getSoundPickTracks() {
