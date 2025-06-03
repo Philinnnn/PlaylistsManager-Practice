@@ -29,13 +29,21 @@
             <a th:href="@{/sound-pick}" class="button-link">
                 <button>🎶 SoundPick</button>
             </a>
+
+            <a th:href="@{/soundtrack/page}" class="button-link">
+                <button>🎬 Поиск саундтрека</button>
+            </a>
         </div>
+
+        <ul id="resultList" style="margin-top: 15px;"></ul>
 
         <form th:action="@{/auth/logout}" method="post" style="margin-top: 20px;">
             <button type="submit">🚪 Выйти</button>
         </form>
     </div>
 </div>
+
 <script th:src="@{/js/dashboard.js}"></script>
+<script th:src="@{/js/soundtrack.js}"></script>
 </body>
 </html>

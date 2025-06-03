@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Поиск саундтреков</title>
+  <link rel="stylesheet" th:href="@{/css/form-style.css}">
+</head>
+<body>
+<div class="wrapper">
+  <div class="card">
+    <h1>🔎 Где звучал трек?</h1>
+
+    <form id="soundtrackForm">
+      <input type="text" id="trackName" placeholder="Название трека" required>
+      <input type="text" id="artistName" placeholder="Исполнитель" required>
+      <button type="submit">Искать в фильмах/сериалах</button>
+    </form>
+
+    <div id="resultContainer" class="button-link playlist-link" style="display: flex; justify-content: center; margin-top: 20px;"></div>
+
+    <a th:href="@{/dashboard}" class="button-link">
+      <button>⬅ Вернуться</button>
+    </a>
+  </div>
+</div>
+
+<script th:src="@{/js/soundtrack.js}"></script>
+</body>
+</html>

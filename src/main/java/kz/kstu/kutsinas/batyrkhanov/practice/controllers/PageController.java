@@ -45,5 +45,10 @@ public class PageController {
     public String soundPick() {
         return "soundPick";
     }
+
+    @GetMapping("/soundtrack/page")
+    public String showSoundtrackPage() {
+        return "soundtrack";
+    }
 }
 
