@@ -41,13 +41,13 @@ public class YouTubeIntegrationTest {
                 httpTransport, jsonFactory, clientId, clientSecret, SCOPES
         ).setAccessType("offline").build();
 
-        String redirectUri = "urn:ietf:wg:oauth:2.0:oob";
+        String redirectUri = "http://localhost:8080/login/oauth2/code/google";
 
         String authUrl = flow.newAuthorizationUrl().setRedirectUri(redirectUri).build();
 
-        System.out.println("\n🔗 Открой в браузере эту ссылку и авторизуйся:");
+        System.out.println("\n Open this link:");
         System.out.println(authUrl);
-        System.out.print(" Вставь код авторизации здесь: ");
+        System.out.print(" Add client code: ");
 
         Scanner scanner = new Scanner(System.in);
         String code = scanner.nextLine();
@@ -71,7 +71,7 @@ public class YouTubeIntegrationTest {
         assertNotNull(items);
         assertFalse(items.isEmpty());
 
-        System.out.println("✅ Найдено видео: " + items.size());
+        System.out.println(" Найдено видео: " + items.size());
         for (SearchResult item : items) {
             System.out.println("- " + item.getSnippet().getTitle());
         }
