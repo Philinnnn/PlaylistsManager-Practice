@@ -20,4 +20,7 @@ public class UserSession {
     private String email;
     private String displayName;
     private String username;
+
+    private String youtubeAccessToken;
+    private String youtubeRefreshToken;
 }

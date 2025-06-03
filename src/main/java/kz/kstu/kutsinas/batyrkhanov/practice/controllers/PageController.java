@@ -50,5 +50,10 @@ public class PageController {
     public String showSoundtrackPage() {
         return "soundtrack";
     }
+
+    @GetMapping("/youtube")
+    public String showYouTubePage() {
+        return "youtube";
+    }
 }
 
