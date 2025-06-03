@@ -32,6 +32,25 @@
       <version>9.1.1</version>
     </dependency>
 
+    <!-- https://mvnrepository.com/artifact/com.google.apis/google-api-services-youtube -->
+    <dependency>
+      <groupId>com.google.apis</groupId>
+      <artifactId>google-api-services-youtube</artifactId>
+      <version>v3-rev222-1.25.0</version>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/com.google.auth/google-auth-library-oauth2-http -->
+    <dependency>
+      <groupId>com.google.auth</groupId>
+      <artifactId>google-auth-library-oauth2-http</artifactId>
+      <version>1.35.0</version>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/com.google.api-client/google-api-client -->
+    <dependency>
+      <groupId>com.google.api-client</groupId>
+      <artifactId>google-api-client</artifactId>
+      <version>1.30.8</version>
+    </dependency>
+
     <!-- Dotenv support -->
     <dependency>
       <groupId>io.github.cdimascio</groupId>
