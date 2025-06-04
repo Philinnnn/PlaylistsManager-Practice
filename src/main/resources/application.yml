@@ -11,6 +11,8 @@ spring:
             client-secret: ${GOOGLE_CLIENT_SECRET}
             redirect-uri: "{baseUrl}/login/oauth2/code/google"
             scope: ${GOOGLE_SCOPE}
+
+
           spotify:
             client-id: ${SPOTIFY_CLIENT_ID}
             client-secret: ${SPOTIFY_CLIENT_SECRET}
@@ -24,6 +26,10 @@ spring:
             token-uri: ${SPOTIFY_TOKEN_URI}
             user-info-uri: ${SPOTIFY_USER_INFO_URI}
             user-name-attribute: ${SPOTIFY_USER_NAME_ATTRIBUTE}
+          google:
+            authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
+            token-uri: https://oauth2.googleapis.com/token
+            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
 
   datasource:
     url: ${DB_URL}

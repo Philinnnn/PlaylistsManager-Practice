@@ -29,4 +29,8 @@ public class AppUser {
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "spotify_user_id", referencedColumnName = "id")
     private SpotifyUser spotifyUser;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "google_user_id", referencedColumnName = "id")
+    private GoogleUser googleUser;
 }
