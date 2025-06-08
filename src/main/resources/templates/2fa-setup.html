@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Подключение Google Authenticator</title>
+    <link rel="stylesheet" th:href="@{/css/form-style.css}">
+</head>
+<body>
+<div class="wrapper">
+    <div class="card" style="text-align: center">
+        <h1>Двухфакторная аутентификация</h1>
+        <div id="qr-block" style="margin: 20px 0;"></div>
+        <form id="enable2faForm">
+            <label for="code">Введите код из Google Authenticator:</label>
+            <input type="text" id="code" name="code" required maxlength="6" pattern="\\d{6}" placeholder="6-значный код"/>
+            <button type="submit">Включить 2FA</button>
+        </form>
+        <div id="result"></div>
+    </div>
+</div>
+<script src="/js/2fa-setup.js"></script>
+</body>
+</html>
+

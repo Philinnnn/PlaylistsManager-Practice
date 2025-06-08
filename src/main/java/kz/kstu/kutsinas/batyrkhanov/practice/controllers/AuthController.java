@@ -43,10 +43,12 @@ public class AuthController {
         try {
             String username = (String) request.get("username");
             String password = (String) request.get("password");
-            authService.loginUser(username, password, httpRequest);
-
-            httpRequest.getSession().setAttribute("spotifyLinked", userSession.getAccessToken() != null);
-
+            boolean need2fa = authService.loginUserWith2faCheck(username, password, httpRequest);
+            if (need2fa) {
+                return ResponseEntity.ok("2fa_required");
+            }
+            httpRequest.getSession().setAttribute("spotifyLinked", userSession.getAccessToken() != null && !userSession.getAccessToken().isEmpty() && !"spotify_linked".equals(userSession.getAccessToken()));
+            httpRequest.getSession().setAttribute("twoFactorEnabled", userSession.getUsername() != null && authService.isTwoFactorEnabled(userSession.getUsername()));
             return ResponseEntity.ok("Login successful");
         } catch (BadCredentialsException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");

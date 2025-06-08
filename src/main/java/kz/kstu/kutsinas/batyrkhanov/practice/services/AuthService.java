@@ -71,12 +71,56 @@ public class AuthService {
         loadUserSession(user);
     }
 
+    /**
+     * Проверка пароля и определение необходимости 2FA.
+     * @return true если требуется 2FA, false если можно сразу логинить
+     */
+    public boolean loginUserWith2faCheck(String username, String password, HttpServletRequest request) {
+        Authentication auth = authManager.authenticate(
+                new UsernamePasswordAuthenticationToken(username, password)
+        );
+        AppUser user = appUserRepo.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found in DB"));
+        if (Boolean.TRUE.equals(user.getTwoFactorEnabled())) {
+            // Только аутентификация пароля, сессию не создаём
+            return true;
+        }
+        // Если 2FA не требуется — обычный вход
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
+        context.setAuthentication(auth);
+        SecurityContextHolder.setContext(context);
+        request.getSession().setAttribute(
+                HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, context
+        );
+        refreshSpotifyAccessToken(user);
+        loadUserSession(user);
+        return false;
+    }
+
+    /**
+     * Завершение входа после успешной 2FA
+     */
+    public void finishLoginAfter2fa(String username, HttpServletRequest request) {
+        AppUser user = appUserRepo.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found in DB"));
+        // Используем только username, не user.getPassword()!
+        Authentication auth = new UsernamePasswordAuthenticationToken(username, null, java.util.List.of(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_USER")));
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
+        context.setAuthentication(auth);
+        SecurityContextHolder.setContext(context);
+        request.getSession().setAttribute(
+                HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, context
+        );
+        refreshSpotifyAccessToken(user);
+        loadUserSession(user);
+    }
+
    /**
      * Updates Spotify access tokens for the user.
      *
      * @param user User object
      */
-    private void refreshSpotifyAccessToken(AppUser user) {
+    public void refreshSpotifyAccessToken(AppUser user) {
         var spotifyUser = user.getSpotifyUser();
         if (spotifyUser == null || spotifyUser.getRefreshToken() == null) return;
 
@@ -119,15 +163,22 @@ public class AuthService {
         session.setUsername(user.getUsername());
         session.setUserId(String.valueOf(user.getId()));
 
-        if (user.getSpotifyUser() != null) {
-            var spotify = user.getSpotifyUser();
-            session.setEmail(spotify.getEmail());
-            session.setDisplayName(spotify.getDisplayName());
-            session.setAccessToken(spotify.getAccessToken());
-            session.setRefreshToken(spotify.getRefreshToken());
+        // Проверяем только наличие spotifyUserId
+        if (user.getSpotifyUser() != null && user.getSpotifyUser().getId() != null) {
+            session.setAccessToken("spotify_linked"); // Просто маркер
         } else {
-            session.setEmail("local user@" + user.getUsername());
-            session.setDisplayName(user.getUsername());
+            session.setAccessToken(null);
         }
+    }
+
+    /**
+     * Checks if two-factor authentication is enabled for the user.
+     *
+     * @param username user name
+     * @return true if 2FA is enabled, false otherwise
+     */
+    public boolean isTwoFactorEnabled(String username) {
+        AppUser user = appUserRepo.findByUsername(username).orElse(null);
+        return user != null && Boolean.TRUE.equals(user.getTwoFactorEnabled());
     }
 }

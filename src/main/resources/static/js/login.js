@@ -17,10 +17,15 @@ document.getElementById("loginForm").addEventListener("submit", async function (
     result.textContent = text;
 
     if (res.ok) {
+        if (text === '2fa_required') {
+            localStorage.setItem('2fa_username', username);
+            window.location.href = '/2fa-verify';
+            return;
+        }
         result.className = "success";
         setTimeout(() => {
             window.location.href = "/dashboard";
-        }, );
+        }, 500);
     } else {
         result.className = "error";
     }

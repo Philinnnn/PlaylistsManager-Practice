@@ -33,4 +33,10 @@ public class AppUser {
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "google_user_id", referencedColumnName = "id")
     private GoogleUser googleUser;
+
+    @Column(name = "totp_secret")
+    private String totpSecret;
+
+    @Column(name = "two_factor_enabled")
+    private Boolean twoFactorEnabled = false;
 }

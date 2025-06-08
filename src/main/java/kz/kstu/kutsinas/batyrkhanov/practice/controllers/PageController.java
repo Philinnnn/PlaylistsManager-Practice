@@ -1,10 +1,20 @@
 package kz.kstu.kutsinas.batyrkhanov.practice.controllers;
 
+import kz.kstu.kutsinas.batyrkhanov.practice.entities.AppUser;
+import kz.kstu.kutsinas.batyrkhanov.practice.repositories.AppUserRepo;
+import kz.kstu.kutsinas.batyrkhanov.practice.utils.UserSession;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
+@RequiredArgsConstructor
 public class PageController {
+    private final AppUserRepo appUserRepo;
+    private final UserSession userSession;
 
     @GetMapping("/")
     public String index() {
@@ -22,7 +32,17 @@ public class PageController {
     }
 
     @GetMapping("/dashboard")
-    public String dashboard() {
+    public String dashboard(Model model) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean spotifyLinked = false;
+        if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getPrincipal())) {
+            String username = auth.getName();
+            AppUser user = appUserRepo.findByUsername(username).orElse(null);
+            if (user != null && user.getSpotifyUser() != null && user.getSpotifyUser().getId() != null) {
+                spotifyLinked = true;
+            }
+        }
+        model.addAttribute("spotifyLinked", spotifyLinked);
         return "dashboard";
     }
 
@@ -55,5 +75,9 @@ public class PageController {
     public String showYouTubePage() {
         return "youtube";
     }
-}
 
+    @GetMapping("/2fa-verify")
+    public String twofaVerify() {
+        return "2fa-verify";
+    }
+}

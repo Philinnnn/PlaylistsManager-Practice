@@ -10,14 +10,14 @@
     <div class="card" style="text-align: center">
         <h1>Добро пожаловать, <span sec:authentication="name">пользователь</span>!</h1>
 
-        <div th:unless="${session.spotifyLinked}">
+        <div th:unless="${spotifyLinked}">
             <p>Чтобы создать плейлист — привяжите свой Spotify аккаунт:</p>
             <a th:href="@{/oauth2/authorization/spotify}">
                 <button>🔗 Привязать Spotify</button>
             </a>
         </div>
 
-        <div th:if="${session.spotifyLinked}">
+        <div th:if="${spotifyLinked}">
             <a th:href="@{/spotify/create-playlist-page}" class="button-link">
                 <button>🎵 Плейлист по настроению</button>
             </a>
@@ -44,6 +44,12 @@
         <form th:action="@{/auth/logout}" method="post" style="margin-top: 20px;">
             <button type="submit">🚪 Выйти</button>
         </form>
+
+        <hr style="margin: 30px 0;">
+        <div id="twofa-block">
+            <h2>Двухфакторная аутентификация</h2>
+            <div id="twofa-status-area"></div>
+        </div>
     </div>
 </div>
 

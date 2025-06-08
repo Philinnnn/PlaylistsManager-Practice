@@ -56,7 +56,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/auth/**", "/login", "/register", "/css/**", "/js/**").permitAll()
+                        .requestMatchers("/", "/auth/**", "/login", "/register", "/2fa-verify", "/js/2fa-verify.js", "/css/**", "/js/**").permitAll()
                         .anyRequest().authenticated())
                 .formLogin(AbstractHttpConfigurer::disable)
                 .logout(logout -> logout
