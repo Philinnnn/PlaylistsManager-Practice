@@ -51,8 +51,9 @@ public class AuthService {
      * @param username user name
      * @param password password
      * @param request http request
+     * @param rememberMe whether to remember the user
      */
-    public void loginUser(String username, String password, HttpServletRequest request) {
+    public void loginUser(String username, String password, HttpServletRequest request, boolean rememberMe) {
         Authentication auth = authManager.authenticate(
                 new UsernamePasswordAuthenticationToken(username, password)
         );

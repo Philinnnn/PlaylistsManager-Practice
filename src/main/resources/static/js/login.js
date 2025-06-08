@@ -3,11 +3,12 @@ document.getElementById("loginForm").addEventListener("submit", async function (
 
     const username = document.getElementById("username").value;
     const password = document.getElementById("password").value;
+    const rememberMe = document.getElementById("rememberMe").checked;
 
     const res = await fetch("/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ username, password, rememberMe }),
         credentials: "include"
     });
 

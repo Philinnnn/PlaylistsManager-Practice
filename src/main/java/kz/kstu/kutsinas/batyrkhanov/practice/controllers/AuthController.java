@@ -1,12 +1,16 @@
 package kz.kstu.kutsinas.batyrkhanov.practice.controllers;
 
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import kz.kstu.kutsinas.batyrkhanov.practice.services.AuthService;
 import kz.kstu.kutsinas.batyrkhanov.practice.utils.UserSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,9 +39,12 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody Map<String, String> request, HttpServletRequest httpRequest) {
+    public ResponseEntity<String> login(@RequestBody Map<String, Object> request, HttpServletRequest httpRequest) {
         try {
-            authService.loginUser(request.get("username"), request.get("password"), httpRequest);
+            String username = (String) request.get("username");
+            String password = (String) request.get("password");
+            boolean rememberMe = request.get("rememberMe") != null && (Boolean) request.get("rememberMe");
+            authService.loginUser(username, password, httpRequest, rememberMe);
 
             httpRequest.getSession().setAttribute("spotifyLinked", userSession.getAccessToken() != null);
 
@@ -48,8 +55,22 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<String> logout(HttpServletRequest request) {
+    public ResponseEntity<String> logout(HttpServletRequest request, HttpServletResponse response) {
         authService.logout(request);
+        Cookie cookie = new Cookie("remember-me", null);
+        cookie.setPath("/");
+        cookie.setMaxAge(0);
+        response.addCookie(cookie);
         return ResponseEntity.ok("Logged out successfully");
+    }
+
+    @RequestMapping("/check")
+    public ResponseEntity<Void> checkAuth() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated() && !authentication.getPrincipal().equals("anonymousUser")) {
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 }

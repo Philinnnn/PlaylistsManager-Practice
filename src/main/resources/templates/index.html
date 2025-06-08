@@ -10,13 +10,12 @@
     <div class="card" style="text-align: center">
         <h1>Spotify Playlist Generator</h1>
         <p>Добро пожаловать! Войдите или зарегистрируйтесь, чтобы начать.</p>
-        <a th:href="@{/login}">
-            <button>🔐 Войти</button>
-        </a>
-        <a th:href="@{/register}">
-            <button>📝 Зарегистрироваться</button>
-        </a>
+        <div style="display: flex; justify-content: center; gap: 10px; margin-top: 20px;">
+            <a th:href="@{/login}"><button>🔐 Войти</button></a>
+            <a th:href="@{/register}"><button>📝 Зарегистрироваться</button></a>
+        </div>
     </div>
 </div>
+<script src="/js/index.js"></script>
 </body>
 </html>
