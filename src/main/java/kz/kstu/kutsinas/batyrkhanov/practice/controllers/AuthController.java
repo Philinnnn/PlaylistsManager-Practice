@@ -43,8 +43,7 @@ public class AuthController {
         try {
             String username = (String) request.get("username");
             String password = (String) request.get("password");
-            boolean rememberMe = request.get("rememberMe") != null && (Boolean) request.get("rememberMe");
-            authService.loginUser(username, password, httpRequest, rememberMe);
+            authService.loginUser(username, password, httpRequest);
 
             httpRequest.getSession().setAttribute("spotifyLinked", userSession.getAccessToken() != null);
 
